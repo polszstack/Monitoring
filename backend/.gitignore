@@ -1,0 +1,19 @@
+# PHP
+vendor/
+*.log
+*.cache
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.sqlite
+*.db
