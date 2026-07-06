@@ -1,31 +1,23 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
+  <div class="flex min-h-screen bg-gray-100">
     <!-- Sidebar -->
-    <Sidebar :isOpen="sidebarOpen" />
+    <Sidebar />
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-      <!-- Navbar -->
-      <Navbar @toggle-sidebar="toggleSidebar" />
-
-      <!-- Page Content -->
-      <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-        <div class="container mx-auto px-6 py-8">
-          <slot />
-        </div>
-      </main>
+    <div class="flex-1 ml-64">
+      <slot />
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue';
-import Navbar from './Navbar.vue';
-import Sidebar from './Sidebar.vue';
+<script lang="ts">
+import { defineComponent } from 'vue'
+import Sidebar from './Sidebar.vue'
 
-const sidebarOpen = ref(true);
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value;
-};
+export default defineComponent({
+  name: 'AppLayout',
+  components: {
+    Sidebar
+  }
+})
 </script>

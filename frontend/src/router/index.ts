@@ -54,6 +54,12 @@ const routes: RouteRecordRaw[] = [
     path: '/:pathMatch(.*)*',
     redirect: '/dashboard',
   },
+  {
+  path: '/facility',
+  name: 'Facility',
+  component: () => import('@/views/FacilityView.vue'),
+  meta: { requiresAuth: true },
+},
 ];
 
 const router = createRouter({
