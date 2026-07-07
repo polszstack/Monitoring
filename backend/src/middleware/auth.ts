@@ -1,9 +1,16 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { AuthRequest } from '../types';
+
+interface AuthRequest extends Request {
+  user?: {
+    id: number;
+    username: string;
+    role: string;
+  };
+}
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
+  const authHeader = req.header('authorization');
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
@@ -23,16 +30,10 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   }
 };
 
-export const authorizeRoles = (...roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
-    
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions' });
-    }
-    
-    next();
-  };
+// Admin only middleware
+export const adminOnly = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
 };

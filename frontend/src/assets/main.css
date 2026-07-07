@@ -2,30 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @layer base {
+  /* Injecting the custom shadows directly into Tailwind's utility layer */
+  :root {
+    --shadow-soft: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+    --shadow-glow: 0 0 20px 2px rgba(59, 130, 246, 0.15), 0 0 8px rgba(59, 130, 246, 0.1);
+  }
+
   body {
-    @apply bg-gray-50;
+    @apply bg-gray-50 text-gray-900 antialiased font-sans;
+  }
+
+  /* Custom Slim Scrollbars */
+  ::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
   }
 }
 
 @layer components {
+  /* --- Base Button Styles --- */
+  .btn-base {
+    @apply inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-xl 
+           focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200;
+  }
+  
+  .btn-animated {
+    @apply shadow-sm hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* --- Button Variants --- */
   .btn-primary {
-    @apply px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors duration-200;
+    @apply btn-base btn-animated bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
   }
-  
+
   .btn-secondary {
-    @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200;
+    @apply btn-base btn-animated bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-primary-500;
   }
-  
+
   .btn-danger {
-    @apply px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200;
+    @apply btn-base btn-animated bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
   }
 
+  .btn-success {
+    @apply btn-base btn-animated bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500;
+  }
+
+  .btn-ghost {
+    @apply btn-base text-gray-600 hover:bg-gray-100 focus:ring-gray-500;
+  }
+
+  /* --- Inputs --- */
   .input-field {
-    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm;
+    @apply block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm
+           placeholder-gray-400 transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
   }
 
+  /* --- Cards --- */
   .card {
-    @apply bg-white overflow-hidden shadow rounded-lg;
+    @apply bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-lg;
+    /* Using arbitrary values that reference our root variables safely */
+    box-shadow: var(--shadow-soft);
   }
+
+  .card-glow-hover:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* --- Badges --- */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset;
+  }
+
+  .badge-success { @apply bg-emerald-50 text-emerald-700 ring-emerald-600/20; }
+  .badge-danger  { @apply bg-red-50 text-red-700 ring-red-600/20; }
+  .badge-warning { @apply bg-amber-50 text-amber-700 ring-amber-600/20; }
+  .badge-info    { @apply bg-sky-50 text-sky-700 ring-sky-600/20; }
+  .badge-purple  { @apply bg-purple-50 text-purple-700 ring-purple-600/20; }
+
+  /* --- Design Elements --- */
+  .gradient-primary { @apply bg-gradient-to-br from-primary-500 to-primary-700; }
+  .gradient-success { @apply bg-gradient-to-br from-emerald-400 to-emerald-600; }
+  .gradient-danger  { @apply bg-gradient-to-br from-red-400 to-red-600; }
+
+  .glass { @apply bg-white/80 backdrop-blur-lg border border-white/20; }
 }

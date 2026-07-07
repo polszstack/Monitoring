@@ -6,39 +6,48 @@ import pool from '../config/database';
 export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
-    }
+    console.log('=== Login Attempt ===');
+    console.log('Username:', username);
+    console.log('Password provided:', password);
 
     const [users]: any = await pool.execute(
-      'SELECT * FROM users WHERE username = ? AND status = ?',
-      [username, 'active']
+      'SELECT * FROM users WHERE username = ?',
+      [username]
     );
 
+    console.log('Users found:', users.length);
+    
     if (users.length === 0) {
+      console.log('❌ No user found with username:', username);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = users[0];
+    console.log('User found:', user.username);
+    console.log('User status:', user.status);
+    console.log('Stored password hash:', user.password);
+
+    // Test password comparison
     const validPassword = await bcrypt.compare(password, user.password);
+    console.log('Password match:', validPassword);
 
     if (!validPassword) {
+      console.log('❌ Password does not match');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const secret = process.env.JWT_SECRET ?? 'default-secret';
+    if (user.status !== 'active') {
+      console.log('❌ User is not active');
+      return res.status(401).json({ error: 'Account is inactive' });
+    }
 
     const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
-      secret,
+      { id: user.id, username: user.username, role: user.role },
+      process.env.JWT_SECRET || 'default-secret',
       { expiresIn: '24h' }
     );
 
+    console.log('✅ Login successful for:', username);
     res.json({
       token,
       user: {
@@ -50,25 +59,7 @@ export const login = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-export const getProfile = async (req: any, res: Response) => {
-  try {
-    const [users]: any = await pool.execute(
-      'SELECT id, username, email, full_name, role, status, created_at FROM users WHERE id = ?',
-      [req.user.id]
-    );
-
-    if (users.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(users[0]);
-  } catch (error) {
-    console.error('Get profile error:', error);
+    console.error('❌ Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

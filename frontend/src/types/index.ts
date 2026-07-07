@@ -91,6 +91,8 @@ export interface FacilityReport {
   actual_cost: number | null
   notes: string | null
   image_path: string | null
+  reporter_name?: string
+  assignee_name?: string
 }
 
 export interface VisitorLog {

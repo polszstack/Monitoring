@@ -1,6 +1,7 @@
 import express from 'express';
-import { authenticateToken, authorizeRoles } from '../middleware/auth';
+import { authenticateToken, adminOnly } from '../middleware/auth';
 import * as authController from '../controllers/authController';
+import { Request, Response } from 'express';
 import * as teacherController from '../controllers/teacherController';
 import * as scheduleController from '../controllers/scheduleController';
 import * as attendanceController from '../controllers/attendanceController';
@@ -9,32 +10,50 @@ import * as visitorController from '../controllers/visitorController';
 
 const router = express.Router();
 
-// Auth routes
+// Auth routes (public)
 router.post('/auth/login', authController.login);
-router.get('/auth/profile', authenticateToken, authController.getProfile);
 
-// Teacher routes
-router.get('/teachers', authenticateToken, teacherController.getAllTeachers);
-router.get('/teachers/:id', authenticateToken, teacherController.getTeacher);
-router.post('/teachers', authenticateToken, authorizeRoles('admin'), teacherController.createTeacher);
+// All routes below require authentication + admin
+router.use(authenticateToken);
+router.use(adminOnly);
 
-// Schedule routes
-router.get('/schedules', authenticateToken, scheduleController.getScheduleTemplates);
-router.post('/schedules', authenticateToken, authorizeRoles('admin'), scheduleController.createScheduleTemplate);
-router.post('/schedules/generate-attendance', authenticateToken, authorizeRoles('admin'), scheduleController.generateDailyAttendance);
+// Auth
+// Inline profile handler to avoid relying on a possibly-missing export in authController
+router.get('/auth/profile', (req: Request, res: Response) => {
+    // authenticateToken middleware should have attached user info to req
+    const user = (req as any).user || null;
+    return res.json({ user });
+});
 
-// Attendance routes
-router.get('/attendance', authenticateToken, attendanceController.getDailyAttendance);
-router.put('/attendance/:id', authenticateToken, attendanceController.markAttendance);
+// Teachers
+router.get('/teachers', teacherController.getAllTeachers);
+router.get('/teachers/:id', teacherController.getTeacher);
+router.post('/teachers', teacherController.createTeacher);
 
-// Facility routes
-router.get('/facility/inventory', authenticateToken, facilityController.getInventory);
-router.post('/facility/inventory', authenticateToken, authorizeRoles('admin', 'staff'), facilityController.createInventoryItem);
-router.post('/facility/reports', authenticateToken, facilityController.createReport);
+// Schedules
+router.get('/schedules', scheduleController.getScheduleTemplates);
+router.post('/schedules', scheduleController.createScheduleTemplate);
+router.post('/schedules/generate-attendance', scheduleController.generateDailyAttendance);
 
-// Visitor routes
-router.get('/visitors', authenticateToken, visitorController.getVisitors);
-router.post('/visitors/check-in', authenticateToken, visitorController.checkIn);
-router.put('/visitors/:id/check-out', authenticateToken, visitorController.checkOut);
+// Attendance (optimized for room checking)
+router.get('/attendance/today', attendanceController.getTodayAttendance);
+router.get('/attendance/date/:date', attendanceController.getAttendanceByDate);
+router.put('/attendance/:id', attendanceController.markAttendance);
+router.put('/attendance/bulk', attendanceController.bulkMarkAttendance);
+
+// Facilities (full CRUD)
+router.get('/facility/inventory', facilityController.getInventory);
+router.get('/facility/inventory/:id', facilityController.getInventoryItem);
+router.post('/facility/inventory', facilityController.createInventoryItem);
+router.put('/facility/inventory/:id', facilityController.updateInventoryItem);
+router.get('/facility/reports', facilityController.getReports);
+router.post('/facility/reports', facilityController.createReport);
+router.put('/facility/reports/:id', facilityController.updateReportStatus);
+router.get('/facility/stats', facilityController.getFacilityStats);
+
+// Visitors
+router.get('/visitors', visitorController.getVisitors);
+router.post('/visitors/check-in', visitorController.checkIn);
+router.put('/visitors/:id/check-out', visitorController.checkOut);
 
 export default router;

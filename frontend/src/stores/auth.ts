@@ -1,7 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
-import type { User } from '@/types'
+
+// Local User type because src/types.ts is not a module in this project setup
+type User = {
+  id?: number | string
+  role?: string
+  [key: string]: any
+}
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
