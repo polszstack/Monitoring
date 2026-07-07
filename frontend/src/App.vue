@@ -1,7 +1,13 @@
+<template>
+  <router-view />
+</template>
+
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+// App component
 </script>
 
-<template>
-  <HelloWorld />
-</template>
+<style>
+#app {
+  min-height: 100vh;
+}
+</style>
