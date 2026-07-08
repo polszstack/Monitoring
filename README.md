@@ -1,8 +1,6 @@
 cd backend
-php -S localhost:8000
-
+npm run dev
 
 
 cd frontend
-npm install
-npm run dev
+npm runn dev
