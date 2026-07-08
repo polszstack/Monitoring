@@ -112,7 +112,7 @@
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Course Subject</th>
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Verification</th>
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Real-Time Status</th>
-                <th class="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions Registry</th>
+                <th class="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Remarks</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100/70 bg-white">
@@ -141,7 +141,12 @@
                 </td>
 
                 <td class="px-6 py-4.5 whitespace-nowrap">
-                  <div v-if="att.verification_photo" class="h-10 w-10 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:scale-150 transition-transform duration-150 cursor-zoom-in">
+                  <div 
+                    v-if="att.verification_photo" 
+                    @click="openPhotoModal(att.verification_photo, att.teacher_name)"
+                    class="h-10 w-10 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:scale-110 active:scale-95 transition-all duration-150 cursor-pointer"
+                    title="Click to view full verification photo"
+                  >
                     <img :src="getPhotoUrl(att.verification_photo)" class="h-full w-full object-cover" alt="Verification proof" />
                   </div>
                   <span v-else class="text-xs font-medium text-gray-400 italic">No image uploads</span>
@@ -151,9 +156,12 @@
                   <span :class="getStatusBadgeClass(att.attendance_status)" class="badge px-3 py-1 text-xs font-bold rounded-lg uppercase tracking-wider shadow-2sm">
                     {{ att.attendance_status }}
                   </span>
+                  <div v-if="att.remarks" class="text-[11px] font-bold text-primary-600 mt-1 flex items-center gap-1 bg-primary-50/50 px-2 py-0.5 rounded border border-primary-100/30 w-max">
+                    Remark: {{ att.remarks }}
+                  </div>
                   <div v-if="att.time_marked" class="text-[10px] font-semibold text-gray-400 mt-1 flex items-center gap-1">
                     <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                    {{ att.time_marked }}
+                    Marked: {{ att.time_marked }}
                   </div>
                 </td>
 
@@ -166,38 +174,26 @@
                       capture="environment"
                       :id="'photo-upload-' + att.id" 
                       class="hidden" 
-                      @change="handlePhotoUpload($event, att.id)"
+                      @change="handlePhotoValidationUpload($event)"
                     />
 
-                    <label 
-                      :for="'photo-upload-' + att.id"
-                      class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer select-none"
-                      :class="att.attendance_status === 'present' ? 'bg-white text-emerald-600 shadow-2sm pointer-events-none opacity-40' : 'text-gray-500 hover:text-emerald-600 hover:bg-white'"
-                      title="Verify teacher presence via camera/photo"
+                    <select 
+                      :value="getSelectionValue(att)"
+                      @change="handleSelectionAction($event, att)"
+                      class="bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer shadow-2sm"
                     >
-                      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
-                      <span>Present</span>
-                    </label>
-                    
-                    <button 
-                      @click="markAttendance(att.id, 'absent')"
-                      :disabled="att.attendance_status === 'absent'"
-                      class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none"
-                      :class="att.attendance_status === 'absent' ? 'bg-white text-red-600 shadow-2sm' : 'text-gray-500 hover:text-red-600 hover:bg-white'"
-                      title="Teacher absent"
-                    >
-                      <span>Absent</span>
-                    </button>
-                    
-                    <span class="h-3 w-px bg-gray-200 mx-0.5"></span>
+                      <option value="pending" disabled>-- Choose Selection Action --</option>
+                      <option value="PRESENT">🟢 Mark Present</option>
+                      <option value="ABSENT">🔴 Mark Absent</option>
+                      <option value="LT">⏳ LT - Late</option>
+                      <option value="NT">🚫 NT - No Teacher</option>
+                      <option value="EB">📉 EB - Early Break</option>
+                      <option value="ED">🚪 ED - Early Dismissal</option>
+                      <option value="OB">💼 OB - Official Business</option>
+                      <option value="AT">🚌 AT - Academic Tour</option>
+                      <option value="CUSTOM">✍️ Custom Manual Remark Description</option>
+                    </select>
 
-                    <button 
-                      @click="openRemarkModal(att)"
-                      class="p-1.5 text-xs rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition-all hover:shadow-2sm"
-                      title="Add administrative remarks"
-                    >
-                      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
-                    </button>
                   </div>
                 </td>
 
@@ -217,30 +213,75 @@
       leave-to-class="opacity-0"
     >
       <div v-if="showRemarkModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-gray-950/40 backdrop-blur-sm transition-opacity" @click="showRemarkModal = false"></div>
+        <div class="fixed inset-0 bg-gray-950/40 backdrop-blur-sm transition-opacity" @click="closeCustomModal"></div>
         
         <div class="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100/80 animate-scale-up z-10">
           <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-50">
-            <h3 class="text-base font-black text-gray-900 tracking-tight">Add Registry Remarks</h3>
-            <button @click="showRemarkModal = false" class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors">
+            <h3 class="text-base font-black text-gray-900 tracking-tight">Select Registry Remarks</h3>
+            <button @click="closeCustomModal" class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
           
-          <textarea 
-            v-model="remarkText" 
-            rows="4" 
-            class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all mb-4"
-            placeholder="Document anomalous indicators, class context, or tracking information details here..."
-          ></textarea>
+          <div class="space-y-4 mb-5">
+            <div>
+              <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5">Custom Remark Details</label>
+              <textarea 
+                v-model="remarkText" 
+                rows="3" 
+                class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all"
+                placeholder="Enter specialized situational context information details here..."
+              ></textarea>
+            </div>
+          </div>
           
           <div class="flex justify-end gap-2">
-            <button @click="showRemarkModal = false" class="text-xs uppercase tracking-wider font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl transition-all">
+            <button @click="closeCustomModal" class="text-xs uppercase tracking-wider font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl transition-all">
               Discard
             </button>
-            <button @click="saveRemarks" class="text-xs uppercase tracking-wider font-black bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition-all">
-              Save Alteration
+            <button @click="submitCustomTextFlow" class="text-xs uppercase tracking-wider font-black bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition-all">
+              Capture Photo Proof
             </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="showPhotoModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-gray-950/80 backdrop-blur-md">
+        <div class="absolute inset-0 cursor-zoom-out" @click="showPhotoModal = false"></div>
+        
+        <div class="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/10 z-10 animate-scale-up">
+          <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+            <div>
+              <h3 class="text-sm font-black text-gray-900 tracking-tight">Attendance Verification Evidence</h3>
+              <p class="text-xs text-gray-500 mt-0.5">Teacher: <span class="font-bold text-primary-600">{{ activePhotoTeacher }}</span></p>
+            </div>
+            <button 
+              @click="showPhotoModal = false" 
+              class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full p-1.5 transition-colors shadow-2sm focus:outline-none"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          
+          <div class="p-2 bg-gray-900 flex justify-center items-center min-h-[300px] max-h-[70vh]">
+            <img 
+              :src="getPhotoUrl(activePhotoPath)" 
+              class="max-w-full max-h-[65vh] object-contain rounded-lg shadow-md" 
+              alt="Expanded verification preview" 
+            />
+          </div>
+          
+          <div class="px-6 py-3 bg-gray-50 text-center text-[11px] font-medium text-gray-400 italic border-t border-gray-100">
+            Click anywhere outside or hit the close icon to dismiss presentation module view.
           </div>
         </div>
       </div>
@@ -268,15 +309,30 @@ interface DailyAttendance {
   verification_photo?: string
 }
 
-const { get, put, post, loading } = useApi()
+const { get, post, loading } = useApi()
 
 const attendanceList = ref<DailyAttendance[]>([])
 const selectedDate = ref(new Date().toISOString().split('T')[0])
+
+// Dropdown mapping codes (Removed 'AB' to cleanly favor 'ABSENT' workflow)
+const standardCodes = ['LT', 'NT', 'EB', 'ED', 'OB', 'AT']
+
+// Staging action hook to verify entries before payload commits
+const activeStaging = ref<{
+  id: number | null
+  status: string
+  remarks: string
+}>({ id: null, status: '', remarks: '' })
+
+// Dialog & Modal parameters
 const showRemarkModal = ref(false)
 const remarkText = ref('')
-const selectedAttendanceId = ref<number | null>(null)
 
-// Define backend configurations dynamically
+// Lightbox preview options
+const showPhotoModal = ref(false)
+const activePhotoPath = ref('')
+const activePhotoTeacher = ref('')
+
 const BACKEND_URL = 'http://localhost:3000'
 
 const isToday = computed(() => {
@@ -307,19 +363,88 @@ const generateTodayAttendance = async () => {
   }
 }
 
-// FIXED: Bypasses standard useApi to secure flawless FormData transmission safely
-const handlePhotoUpload = async (event: Event, attendanceId: number) => {
+// Map database state to current dropdown select value
+const getSelectionValue = (att: DailyAttendance) => {
+  if (att.attendance_status === 'present') return 'PRESENT'
+  if (att.attendance_status === 'absent' && (!att.remarks || att.remarks.trim() === '')) return 'ABSENT'
+  
+  const currentRemark = att.remarks || ''
+  if (standardCodes.includes(currentRemark.trim())) return currentRemark.trim()
+  if (currentRemark.trim() !== '') return 'CUSTOM'
+  
+  return 'pending'
+}
+
+// Stage selection data and activate camera immediately
+const handleSelectionAction = (event: Event, att: DailyAttendance) => {
+  const target = event.target as HTMLSelectElement
+  const value = target.value
+  if (!value || value === 'pending') return
+
+  activeStaging.value.id = att.id
+
+  if (value === 'PRESENT') {
+    activeStaging.value.status = 'present'
+    activeStaging.value.remarks = ''
+    triggerCameraVerification(att.id)
+  } else if (value === 'ABSENT') {
+    activeStaging.value.status = 'absent'
+    activeStaging.value.remarks = ''
+    triggerCameraVerification(att.id)
+  } else if (standardCodes.includes(value)) {
+    activeStaging.value.status = (value === 'LT') ? 'late' : 'absent'
+    activeStaging.value.remarks = value
+    triggerCameraVerification(att.id)
+  } else if (value === 'CUSTOM') {
+    const isStandard = standardCodes.includes(att.remarks || '')
+    remarkText.value = (att.remarks && !isStandard) ? att.remarks : ''
+    activeStaging.value.status = att.attendance_status === 'pending' ? 'absent' : att.attendance_status
+    showRemarkModal.value = true
+  }
+
+  // Temporary local reset to ensure select state looks unaltered until camera upload finishes
+  target.value = getSelectionValue(att)
+}
+
+const triggerCameraVerification = (id: number) => {
+  setTimeout(() => {
+    const element = document.getElementById(`photo-upload-${id}`) as HTMLInputElement
+    if (element) element.click()
+  }, 40)
+}
+
+const submitCustomTextFlow = () => {
+  activeStaging.value.remarks = remarkText.value.trim()
+  showRemarkModal.value = false
+  if (activeStaging.value.id) {
+    triggerCameraVerification(activeStaging.value.id)
+  }
+}
+
+const closeCustomModal = () => {
+  showRemarkModal.value = false
+  activeStaging.value = { id: null, status: '', remarks: '' }
+}
+
+// Intercept photo capture stream and submit form parameters alongside image multi-part payload
+const handlePhotoValidationUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement
-  if (target.files && target.files[0]) {
+  const attendanceId = activeStaging.value.id
+  
+  if (target.files && target.files[0] && attendanceId) {
     const file = target.files[0]
     
     const formData = new FormData()
     formData.append('photo', file)
+    
+    // Attach staging keys to body data object
+    formData.append('attendance_status', activeStaging.value.status)
+    formData.append('remarks', activeStaging.value.remarks)
 
     try {
-      // Pulling active session token if you are utilizing typical authentication schemes
       const token = localStorage.getItem('token') || localStorage.getItem('auth_token')
       
+      // Routes everything through verification endpoint seamlessly to append photo + text configurations at once
       const response = await fetch(`${BACKEND_URL}/api/attendance/${attendanceId}/verify-present`, {
         method: 'POST',
         body: formData,
@@ -330,44 +455,21 @@ const handlePhotoUpload = async (event: Event, attendanceId: number) => {
         throw new Error(`Upload server failure response: ${response.statusText}`)
       }
 
+      // Reset values upon completion
+      target.value = ''
+      activeStaging.value = { id: null, status: '', remarks: '' }
       await fetchAttendance()
     } catch (err) {
       console.error('Failed verification photo upload processing:', err)
-      alert('Could not upload verification image. Please try again.')
+      alert('Action Blocked: Photo verification failed. Please take a validation photo to confirm.')
     }
   }
 }
 
-const markAttendance = async (id: number, status: string) => {
-  try {
-    await put(`/attendance/${id}`, { 
-      attendance_status: status 
-    })
-    await fetchAttendance()
-  } catch (err) {
-    console.error('Failed to mark attendance:', err)
-  }
-}
-
-const openRemarkModal = (att: DailyAttendance) => {
-  selectedAttendanceId.value = att.id
-  remarkText.value = att.remarks || ''
-  showRemarkModal.value = true
-}
-
-const saveRemarks = async () => {
-  if (selectedAttendanceId.value) {
-    try {
-      await put(`/attendance/${selectedAttendanceId.value}`, {
-        attendance_status: attendanceList.value.find(a => a.id === selectedAttendanceId.value)?.attendance_status || 'pending',
-        remarks: remarkText.value
-      })
-      await fetchAttendance()
-      showRemarkModal.value = false
-    } catch (err) {
-      console.error('Failed to save remarks:', err)
-    }
-  }
+const openPhotoModal = (photoPath: string, teacherName: string) => {
+  activePhotoPath.value = photoPath
+  activePhotoTeacher.value = teacherName
+  showPhotoModal.value = true
 }
 
 const formatTime = (time: string) => {
@@ -375,7 +477,6 @@ const formatTime = (time: string) => {
   return time.substring(0, 5)
 }
 
-// FIXED: Formulates reliable URL linking up to the static asset folder explicitly
 const getPhotoUrl = (photoPath: string) => {
   if (!photoPath) return ''
   return `${BACKEND_URL}${photoPath}`
