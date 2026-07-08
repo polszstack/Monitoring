@@ -1,5 +1,20 @@
 import { Request, Response } from 'express';
 import pool from '../config/database';
+import multer from 'multer';
+import path from 'path';
+
+// --- Configure Multer Storage ---
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/verification_photos/'); // Make sure this folder exists in your project
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'verify-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+export const upload = multer({ storage: storage });
 
 // Get today's attendance for room checking
 export const getTodayAttendance = async (req: Request, res: Response) => {
@@ -22,6 +37,7 @@ export const getTodayAttendance = async (req: Request, res: Response) => {
         da.time_marked,
         da.remarks,
         da.marked_by,
+        da.verification_photo, -- Added this column
         u.full_name as teacher_name,
         t.employee_id,
         t.department,
@@ -62,6 +78,7 @@ export const getAttendanceByDate = async (req: Request, res: Response) => {
         da.time_marked,
         da.remarks,
         da.marked_by,
+        da.verification_photo, -- Added this column
         u.full_name as teacher_name,
         t.employee_id,
         t.department,
@@ -81,14 +98,51 @@ export const getAttendanceByDate = async (req: Request, res: Response) => {
   }
 };
 
-// Mark attendance (admin checks room)
+// NEW: Verify Present with Photo Upload
+export const verifyPresent = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const currentTime = new Date().toTimeString().split(' ')[0];
+
+    // Check if a file was actually uploaded
+    if (!req.file) {
+      return res.status(400).json({ error: 'Verification photo is required to mark teacher as present.' });
+    }
+
+    // Save relative image path or URL to your database column
+    const photoPath = `/uploads/verification_photos/${req.file.filename}`;
+
+    const [result]: any = await pool.execute(
+      `UPDATE daily_attendance 
+       SET attendance_status = 'present', 
+           time_marked = ?, 
+           marked_by = ?,
+           verification_photo = ? 
+       WHERE id = ?`,
+      [currentTime, req.user.id, photoPath, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Attendance record not found' });
+    }
+
+    res.json({ 
+      message: 'Attendance verified with photo successfully',
+      photoPath
+    });
+  } catch (error) {
+    console.error('Verify present photo error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Mark attendance (Keep this for handling regular 'absent', 'late', etc.)
 export const markAttendance = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
     const { attendance_status, remarks } = req.body;
     const currentTime = new Date().toTimeString().split(' ')[0];
     
-    // Validate status
     const validStatuses = ['present', 'absent', 'late', 'excused'];
     if (!validStatuses.includes(attendance_status)) {
       return res.status(400).json({ error: 'Invalid attendance status' });
@@ -108,12 +162,8 @@ export const markAttendance = async (req: any, res: Response) => {
       return res.status(404).json({ error: 'Attendance record not found' });
     }
 
-    // Get updated record
     const [updated]: any = await pool.execute(`
-      SELECT 
-        da.*,
-        u.full_name as teacher_name,
-        t.employee_id
+      SELECT da.*, u.full_name as teacher_name, t.employee_id
       FROM daily_attendance da
       JOIN teachers t ON da.teacher_id = t.id
       JOIN users u ON t.user_id = u.id
@@ -130,11 +180,11 @@ export const markAttendance = async (req: any, res: Response) => {
   }
 };
 
-// Bulk mark attendance (mark multiple rooms at once)
+// Bulk mark attendance (Unchanged)
 export const bulkMarkAttendance = async (req: any, res: Response) => {
   const connection = await pool.getConnection();
   try {
-    const { attendances } = req.body; // Array of { id, attendance_status, remarks }
+    const { attendances } = req.body;
     const currentTime = new Date().toTimeString().split(' ')[0];
     
     await connection.beginTransaction();

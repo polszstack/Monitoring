@@ -35,11 +35,14 @@ router.get('/schedules', scheduleController.getScheduleTemplates);
 router.post('/schedules', scheduleController.createScheduleTemplate);
 router.post('/schedules/generate-attendance', scheduleController.generateDailyAttendance);
 
-// Attendance (optimized for room checking)
+// Attendance (optimized for room checking with picture verification support)
 router.get('/attendance/today', attendanceController.getTodayAttendance);
 router.get('/attendance/date/:date', attendanceController.getAttendanceByDate);
 router.put('/attendance/:id', attendanceController.markAttendance);
 router.put('/attendance/bulk', attendanceController.bulkMarkAttendance);
+
+// NEW: Handover endpoint for handling live camera picture uploads
+router.post('/attendance/:id/verify-present', attendanceController.upload.single('photo'), attendanceController.verifyPresent);
 
 // Facilities (full CRUD)
 router.get('/facility/inventory', facilityController.getInventory);

@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-8 animate-fade-in pb-12">
-    <!-- Header Context Row -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-gray-100 pb-6">
       <div>
         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">Room Attendance Check</h2>
@@ -9,7 +8,6 @@
         </p>
       </div>
       
-      <!-- Interactive Input Actions -->
       <div class="flex items-center gap-3 self-start md:self-auto w-full md:w-auto">
         <div class="relative flex-1 md:flex-initial">
           <input 
@@ -28,9 +26,7 @@
       </div>
     </div>
 
-    <!-- Micro Metric Dashboard Grid -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
-      <!-- Total -->
       <div class="card p-5 bg-white border border-gray-100 flex items-center justify-between group">
         <div class="space-y-1">
           <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Classes</p>
@@ -42,7 +38,6 @@
           <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
         </div>
       </div>
-      <!-- Present -->
       <div class="card p-5 bg-white border border-gray-100 flex items-center justify-between group">
         <div class="space-y-1">
           <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Present</p>
@@ -54,7 +49,6 @@
           <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         </div>
       </div>
-      <!-- Absent -->
       <div class="card p-5 bg-white border border-gray-100 flex items-center justify-between group">
         <div class="space-y-1">
           <p class="text-[10px] font-black text-red-400 uppercase tracking-widest">Absent</p>
@@ -66,7 +60,6 @@
           <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         </div>
       </div>
-      <!-- Pending -->
       <div class="card p-5 bg-white border border-gray-100 flex items-center justify-between group">
         <div class="space-y-1">
           <p class="text-[10px] font-black text-amber-500 uppercase tracking-widest">Pending</p>
@@ -80,7 +73,6 @@
       </div>
     </div>
 
-    <!-- Schedule Data Table Module Container -->
     <div class="card bg-white overflow-hidden shadow-soft border border-gray-100">
       <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/40">
         <div>
@@ -92,13 +84,11 @@
       </div>
 
       <div>
-        <!-- Loading State Module -->
         <div v-if="loading" class="flex flex-col justify-center items-center py-20">
           <div class="animate-spin rounded-full h-9 w-9 border-2 border-primary-600 border-t-transparent"></div>
           <p class="mt-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Syncing Database Matrix...</p>
         </div>
         
-        <!-- Empty State Module -->
         <div v-else-if="attendanceList.length === 0" class="text-center py-16 animate-fade-in">
           <div class="inline-flex p-4 bg-gray-50 text-gray-400 rounded-2xl mb-4 border border-gray-100">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -112,7 +102,6 @@
           </button>
         </div>
 
-        <!-- High-Tier Table System -->
         <div v-else class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-100">
             <thead>
@@ -121,7 +110,7 @@
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Location Node</th>
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Assigned Professional</th>
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Course Subject</th>
-                <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Level Structure</th>
+                <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Verification</th>
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Real-Time Status</th>
                 <th class="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions Registry</th>
               </tr>
@@ -131,38 +120,33 @@
                   class="hover:bg-gray-50/40 transition-colors group"
                   :class="getRowClass(att.attendance_status)">
                 
-                <!-- Time Metrics -->
                 <td class="px-6 py-4.5 whitespace-nowrap">
                   <div class="font-bold text-gray-900 text-sm tracking-tight">{{ formatTime(att.start_time) }}</div>
                   <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mt-0.5">{{ formatTime(att.end_time) }}</div>
                 </td>
 
-                <!-- Room Badge -->
                 <td class="px-6 py-4.5 whitespace-nowrap">
                   <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-primary-50 text-primary-700 border border-primary-100/40 shadow-2sm">
                     RM {{ att.room }}
                   </span>
                 </td>
 
-                <!-- Professional Entity info -->
                 <td class="px-6 py-4.5 whitespace-nowrap">
                   <div class="font-bold text-gray-900 text-sm tracking-tight group-hover:text-primary-600 transition-colors">{{ att.teacher_name }}</div>
                   <div class="text-xs font-mono text-gray-400 mt-0.5">{{ att.employee_id }}</div>
                 </td>
 
-                <!-- Subject Information -->
                 <td class="px-6 py-4.5 whitespace-nowrap text-sm font-semibold text-gray-700">
                   {{ att.subject }}
                 </td>
 
-                <!-- Grade / Section info -->
-                <td class="px-6 py-4.5 whitespace-nowrap text-xs font-bold text-gray-500">
-                  <span class="bg-gray-100/80 text-gray-600 px-2 py-1 rounded-md tracking-tight">
-                    {{ att.grade_level }} {{ att.section ? '• ' + att.section : '' }}
-                  </span>
+                <td class="px-6 py-4.5 whitespace-nowrap">
+                  <div v-if="att.verification_photo" class="h-10 w-10 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:scale-150 transition-transform duration-150 cursor-zoom-in">
+                    <img :src="getPhotoUrl(att.verification_photo)" class="h-full w-full object-cover" alt="Verification proof" />
+                  </div>
+                  <span v-else class="text-xs font-medium text-gray-400 italic">No image uploads</span>
                 </td>
 
-                <!-- Modern Status Indicators with subtext markup -->
                 <td class="px-6 py-4.5 whitespace-nowrap">
                   <span :class="getStatusBadgeClass(att.attendance_status)" class="badge px-3 py-1 text-xs font-bold rounded-lg uppercase tracking-wider shadow-2sm">
                     {{ att.attendance_status }}
@@ -173,18 +157,27 @@
                   </div>
                 </td>
 
-                <!-- Modernized Segmented Button Matrix controls -->
                 <td class="px-6 py-4.5 whitespace-nowrap text-center">
                   <div class="inline-flex items-center gap-1.5 bg-gray-50 p-1 rounded-xl border border-gray-100">
-                    <button 
-                      @click="markAttendance(att.id, 'present')"
-                      :disabled="att.attendance_status === 'present'"
-                      class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none"
-                      :class="att.attendance_status === 'present' ? 'bg-white text-emerald-600 shadow-2sm' : 'text-gray-500 hover:text-emerald-600 hover:bg-white'"
-                      title="Teacher present"
+                    
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      capture="environment"
+                      :id="'photo-upload-' + att.id" 
+                      class="hidden" 
+                      @change="handlePhotoUpload($event, att.id)"
+                    />
+
+                    <label 
+                      :for="'photo-upload-' + att.id"
+                      class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer select-none"
+                      :class="att.attendance_status === 'present' ? 'bg-white text-emerald-600 shadow-2sm pointer-events-none opacity-40' : 'text-gray-500 hover:text-emerald-600 hover:bg-white'"
+                      title="Verify teacher presence via camera/photo"
                     >
+                      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
                       <span>Present</span>
-                    </button>
+                    </label>
                     
                     <button 
                       @click="markAttendance(att.id, 'absent')"
@@ -215,7 +208,6 @@
       </div>
     </div>
 
-    <!-- High-Fidelity Refined Dialog Backdrop Modal -->
     <transition
       enter-active-class="transition ease-out duration-200"
       enter-from-class="opacity-0"
@@ -273,6 +265,7 @@ interface DailyAttendance {
   grade_level: string
   section?: string
   time_marked?: string
+  verification_photo?: string
 }
 
 const { get, put, post, loading } = useApi()
@@ -282,6 +275,9 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
 const showRemarkModal = ref(false)
 const remarkText = ref('')
 const selectedAttendanceId = ref<number | null>(null)
+
+// Define backend configurations dynamically
+const BACKEND_URL = 'http://localhost:3000'
 
 const isToday = computed(() => {
   return selectedDate.value === new Date().toISOString().split('T')[0]
@@ -308,6 +304,37 @@ const generateTodayAttendance = async () => {
     await fetchAttendance()
   } catch (err) {
     console.error('Failed to generate attendance:', err)
+  }
+}
+
+// FIXED: Bypasses standard useApi to secure flawless FormData transmission safely
+const handlePhotoUpload = async (event: Event, attendanceId: number) => {
+  const target = event.target as HTMLInputElement
+  if (target.files && target.files[0]) {
+    const file = target.files[0]
+    
+    const formData = new FormData()
+    formData.append('photo', file)
+
+    try {
+      // Pulling active session token if you are utilizing typical authentication schemes
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token')
+      
+      const response = await fetch(`${BACKEND_URL}/api/attendance/${attendanceId}/verify-present`, {
+        method: 'POST',
+        body: formData,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
+
+      if (!response.ok) {
+        throw new Error(`Upload server failure response: ${response.statusText}`)
+      }
+
+      await fetchAttendance()
+    } catch (err) {
+      console.error('Failed verification photo upload processing:', err)
+      alert('Could not upload verification image. Please try again.')
+    }
   }
 }
 
@@ -346,6 +373,12 @@ const saveRemarks = async () => {
 const formatTime = (time: string) => {
   if (!time) return ''
   return time.substring(0, 5)
+}
+
+// FIXED: Formulates reliable URL linking up to the static asset folder explicitly
+const getPhotoUrl = (photoPath: string) => {
+  if (!photoPath) return ''
+  return `${BACKEND_URL}${photoPath}`
 }
 
 const getStatusBadgeClass = (status: string) => {
