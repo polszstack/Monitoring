@@ -27,7 +27,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `daily_attendance`
 --
 
-CREATE TABLE `daily_attendance` (
+ CREATE TABLE `daily_attendance` (
   `id` int(11) NOT NULL,
   `schedule_template_id` int(11) DEFAULT NULL,
   `teacher_id` int(11) NOT NULL,
@@ -48,18 +48,20 @@ CREATE TABLE `daily_attendance` (
   `verification_photo` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-
 --
 -- Dumping data for table `daily_attendance`
 --
 
-INSERT INTO `daily_attendance` (`id`, `schedule_template_id`, `teacher_id`, `attendance_date`, `day_of_week`, `start_time`, `end_time`, `subject`, `room`, `grade_level`, `section`, `attendance_status`, `time_marked`, `remarks`, `marked_by`, `created_at`, `updated_at`) VALUES
-(1, 5, 2, '2026-07-06', 'Monday', '08:00:00', '09:00:00', 'Physics', 'Lab 1', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-04 23:04:29'),
-(2, 1, 1, '2026-07-06', 'Monday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-04 23:04:29'),
-(3, 6, 2, '2026-07-06', 'Monday', '09:00:00', '10:00:00', 'Chemistry', 'Lab 2', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-04 23:04:29'),
-(4, 2, 1, '2026-07-06', 'Monday', '09:00:00', '10:00:00', 'Geometry', 'Room 102', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-04 23:04:29'),
-(5, 3, 1, '2026-07-07', 'Tuesday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-06 11:56:25', '2026-07-06 11:56:25'),
-(6, 7, 2, '2026-07-07', 'Tuesday', '10:00:00', '11:00:00', 'Biology', 'Lab 3', 'Grade 11', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-06 11:56:25', '2026-07-06 11:56:25');
+INSERT INTO `daily_attendance` (`id`, `schedule_template_id`, `teacher_id`, `attendance_date`, `day_of_week`, `start_time`, `end_time`, `subject`, `room`, `grade_level`, `section`, `attendance_status`, `time_marked`, `remarks`, `marked_by`, `created_at`, `updated_at`, `verification_photo`) VALUES
+(1, 5, 2, '2026-07-06', 'Monday', '08:00:00', '09:00:00', 'Physics', 'Lab 1', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-04 23:04:29', NULL),
+(2, 1, 1, '2026-07-06', 'Monday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-04 23:04:29', NULL),
+(3, 6, 2, '2026-07-06', 'Monday', '09:00:00', '10:00:00', 'Chemistry', 'Lab 2', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-04 23:04:29', NULL),
+(4, 2, 1, '2026-07-06', 'Monday', '09:00:00', '10:00:00', 'Geometry', 'Room 102', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-04 23:04:29', NULL),
+(5, 3, 1, '2026-07-07', 'Tuesday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'present', '21:25:23', NULL, 1, '2026-07-06 11:56:25', '2026-07-07 13:25:23', NULL),
+(6, 7, 2, '2026-07-07', 'Tuesday', '10:00:00', '11:00:00', 'Biology', 'Lab 3', 'Grade 11', 'Section A', 'absent', '20:52:06', NULL, 1, '2026-07-06 11:56:25', '2026-07-07 12:52:06', NULL),
+(7, 4, 1, '2026-07-08', 'Wednesday', '10:00:00', '11:00:00', 'Calculus', 'Room 201', 'Grade 11', 'Section C', 'absent', '18:28:46', NULL, 1, '2026-07-07 12:11:55', '2026-07-08 10:28:46', NULL),
+(8, 8, 2, '2026-07-09', 'Thursday', '08:00:00', '10:00:00', 'Math', 'room 302', 'bsis', '2101', 'present', '18:40:29', NULL, 1, '2026-07-08 10:30:26', '2026-07-08 10:40:29', '/uploads/verification_photos/verify-1783507229376-826963807.png');
+
 
 -- --------------------------------------------------------
 

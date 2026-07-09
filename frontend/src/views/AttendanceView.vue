@@ -2,13 +2,15 @@
   <div class="space-y-8 animate-fade-in pb-12">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-gray-100 pb-6">
       <div>
-        <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">Room Attendance Check</h2>
+        <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
+          Room Attendance {{ showArchived ? 'Archive' : 'Check' }}
+        </h2>
         <p class="mt-2 text-sm text-gray-500">
-          Monitor operational facilities and mark teacher attendance matrices for scheduled rooms.
+          {{ showArchived ? `Tracking historical archive logs repository for the selected target date.` : 'Monitor operational facilities and mark teacher attendance matrices for scheduled rooms.' }}
         </p>
       </div>
       
-      <div class="flex items-center gap-3 self-start md:self-auto w-full md:w-auto">
+      <div class="flex flex-wrap items-center gap-3 self-start md:self-auto w-full md:w-auto">
         <div class="relative flex-1 md:flex-initial">
           <input 
             type="date" 
@@ -17,11 +19,37 @@
             @change="fetchAttendance"
           >
         </div>
+        
         <button 
+          v-if="!showArchived"
           @click="generateTodayAttendance" 
           class="flex-1 md:flex-initial text-xs uppercase tracking-wider font-black bg-gray-900 text-white hover:bg-gray-800 px-5 py-3 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98]"
         >
           Generate Today's Matrix
+        </button>
+        
+        <button 
+          @click="downloadPDFReport" 
+          :disabled="filteredAttendanceList.length === 0"
+          class="flex-1 md:flex-initial text-xs uppercase tracking-wider font-black bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-3 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98]"
+        >
+          🖨️ Export PDF
+        </button>
+
+        <button 
+          v-if="filteredAttendanceList.length > 0"
+          @click="toggleArchiveAllRecords"
+          class="flex-1 md:flex-initial text-xs uppercase tracking-wider font-black text-white px-5 py-3 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98]"
+          :class="showArchived ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-600 hover:bg-gray-700'"
+        >
+          {{ showArchived ? '📤 Restore Full Day Sheet' : '🗄️ Archive Full Day Sheet' }}
+        </button>
+
+        <button 
+          @click="showArchived = !showArchived" 
+          class="flex-1 md:flex-initial text-xs uppercase tracking-wider font-black border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 px-5 py-3 rounded-xl shadow-sm transition-all duration-200"
+        >
+          {{ showArchived ? '📋 View Active' : '🗄️ View Archived' }}
         </button>
       </div>
     </div>
@@ -76,10 +104,13 @@
     <div class="card bg-white overflow-hidden shadow-soft border border-gray-100">
       <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/40">
         <div>
-          <h3 class="text-base font-bold text-gray-900 tracking-tight">
-            {{ isToday ? "Today's Schedule Stream" : `Schedule Context Matrix: ${selectedDate}` }}
+          <h3 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <span>{{ showArchived ? '🗄️ Archived Matrix' : '📋 Active Stream Matrix' }}</span>
+            <span class="px-2 py-0.5 text-xs font-mono font-bold text-primary-700 bg-primary-50 rounded-md border border-primary-100">
+              Target Tracked Date: {{ selectedDate }}
+            </span>
           </h3>
-          <p class="text-xs text-gray-400 mt-0.5">Verify physical location occupancy metrics seamlessly.</p>
+          <p class="text-xs text-gray-400 mt-0.5">Use the calendar navigation above to track data records across dates.</p>
         </div>
       </div>
 
@@ -89,21 +120,25 @@
           <p class="mt-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Syncing Database Matrix...</p>
         </div>
         
-        <div v-else-if="attendanceList.length === 0" class="text-center py-16 animate-fade-in">
+        <div v-else-if="filteredAttendanceList.length === 0" class="text-center py-16 animate-fade-in">
           <div class="inline-flex p-4 bg-gray-50 text-gray-400 rounded-2xl mb-4 border border-gray-100">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <p class="text-base font-semibold text-gray-900">No Registry Records Found</p>
-          <p class="text-xs text-gray-400 mt-1 max-w-xs mx-auto">There are no operational checks logged for this specific timeline matrix.</p>
-          <button @click="generateTodayAttendance" class="mt-4 inline-flex text-xs uppercase tracking-wider font-bold bg-gray-900 text-white hover:bg-gray-800 px-4 py-2.5 rounded-xl shadow-sm transition-all">
+          <p class="text-base font-semibold text-gray-900">
+            {{ showArchived ? 'No Archived Records Tracked' : 'No Active Registry Records Found' }}
+          </p>
+          <p class="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+            There are no structural checks flagged under this tracking date environment. Try altering your calendar input.
+          </p>
+          <button v-if="!showArchived" @click="generateTodayAttendance" class="mt-4 inline-flex text-xs uppercase tracking-wider font-bold bg-gray-900 text-white hover:bg-gray-800 px-4 py-2.5 rounded-xl shadow-sm transition-all">
             Generate Default Set
           </button>
         </div>
 
         <div v-else class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-100">
+          <table class="min-w-full divide-y divide-gray-100" id="attendance-table-element">
             <thead>
               <tr class="bg-gray-50/70 border-b border-gray-100">
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Schedule Clock</th>
@@ -112,11 +147,11 @@
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Course Subject</th>
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Verification</th>
                 <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Real-Time Status</th>
-                <th class="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Remarks</th>
+                <th class="px-6 py-4 class-exclude-pdf text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions & Remarks</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100/70 bg-white">
-              <tr v-for="att in attendanceList" :key="att.id" 
+              <tr v-for="att in filteredAttendanceList" :key="att.id" 
                   class="hover:bg-gray-50/40 transition-colors group"
                   :class="getRowClass(att.attendance_status)">
                 
@@ -165,7 +200,7 @@
                   </div>
                 </td>
 
-                <td class="px-6 py-4.5 whitespace-nowrap text-center">
+                <td class="px-6 py-4.5 class-exclude-pdf whitespace-nowrap text-center">
                   <div class="inline-flex items-center gap-1.5 bg-gray-50 p-1 rounded-xl border border-gray-100">
                     
                     <input 
@@ -194,6 +229,14 @@
                       <option value="CUSTOM">✍️ Custom Manual Remark Description</option>
                     </select>
 
+                    <button 
+                      @click="toggleArchiveRecord(att)" 
+                      class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white border border-transparent hover:border-gray-100 transition-all shadow-2sm"
+                      :title="att.is_archived ? 'Restore record to active matrix' : 'Archive record from active matrix'"
+                    >
+                      <span v-if="att.is_archived">📤</span>
+                      <span v-else>🗄️</span>
+                    </button>
                   </div>
                 </td>
 
@@ -205,83 +248,45 @@
     </div>
 
     <transition
-      enter-active-class="transition ease-out duration-200"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
+      enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0"
     >
       <div v-if="showRemarkModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-gray-950/40 backdrop-blur-sm transition-opacity" @click="closeCustomModal"></div>
-        
-        <div class="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100/80 animate-scale-up z-10">
+        <div class="fixed inset-0 bg-gray-950/40 backdrop-blur-sm" @click="closeCustomModal"></div>
+        <div class="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100/80 z-10 animate-scale-up">
           <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-50">
             <h3 class="text-base font-black text-gray-900 tracking-tight">Select Registry Remarks</h3>
             <button @click="closeCustomModal" class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
-          
           <div class="space-y-4 mb-5">
-            <div>
-              <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5">Custom Remark Details</label>
-              <textarea 
-                v-model="remarkText" 
-                rows="3" 
-                class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all"
-                placeholder="Enter specialized situational context information details here..."
-              ></textarea>
-            </div>
+            <textarea v-model="remarkText" rows="3" class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium" placeholder="Enter specialized context..."></textarea>
           </div>
-          
           <div class="flex justify-end gap-2">
-            <button @click="closeCustomModal" class="text-xs uppercase tracking-wider font-bold bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl transition-all">
-              Discard
-            </button>
-            <button @click="submitCustomTextFlow" class="text-xs uppercase tracking-wider font-black bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition-all">
-              Capture Photo Proof
-            </button>
+            <button @click="closeCustomModal" class="text-xs uppercase tracking-wider font-bold bg-gray-100 text-gray-600 px-4 py-2.5 rounded-xl">Discard</button>
+            <button @click="submitCustomTextFlow" class="text-xs uppercase tracking-wider font-black bg-primary-600 text-white px-5 py-2.5 rounded-xl">Capture Photo Proof</button>
           </div>
         </div>
       </div>
     </transition>
 
     <transition
-      enter-active-class="transition ease-out duration-300"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition ease-in duration-200"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
+      enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0"
     >
       <div v-if="showPhotoModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-gray-950/80 backdrop-blur-md">
-        <div class="absolute inset-0 cursor-zoom-out" @click="showPhotoModal = false"></div>
-        
-        <div class="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/10 z-10 animate-scale-up">
+        <div class="absolute inset-0" @click="showPhotoModal = false"></div>
+        <div class="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl z-10 animate-scale-up">
           <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
             <div>
               <h3 class="text-sm font-black text-gray-900 tracking-tight">Attendance Verification Evidence</h3>
               <p class="text-xs text-gray-500 mt-0.5">Teacher: <span class="font-bold text-primary-600">{{ activePhotoTeacher }}</span></p>
             </div>
-            <button 
-              @click="showPhotoModal = false" 
-              class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full p-1.5 transition-colors shadow-2sm focus:outline-none"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+            <button @click="showPhotoModal = false" class="bg-gray-200 text-gray-700 rounded-full p-1.5 shadow-2sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
-          
-          <div class="p-2 bg-gray-900 flex justify-center items-center min-h-[300px] max-h-[70vh]">
-            <img 
-              :src="getPhotoUrl(activePhotoPath)" 
-              class="max-w-full max-h-[65vh] object-contain rounded-lg shadow-md" 
-              alt="Expanded verification preview" 
-            />
-          </div>
-          
-          <div class="px-6 py-3 bg-gray-50 text-center text-[11px] font-medium text-gray-400 italic border-t border-gray-100">
-            Click anywhere outside or hit the close icon to dismiss presentation module view.
+          <div class="p-2 bg-gray-900 flex justify-center items-center min-h-[300px]">
+            <img :src="getPhotoUrl(activePhotoPath)" class="max-w-full max-h-[65vh] object-contain rounded-lg" alt="Preview" />
           </div>
         </div>
       </div>
@@ -290,8 +295,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useApi } from '@/composables/useApi'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 interface DailyAttendance {
   id: number
@@ -307,28 +314,26 @@ interface DailyAttendance {
   section?: string
   time_marked?: string
   verification_photo?: string
+  is_archived?: boolean
 }
 
 const { get, post, loading } = useApi()
 
 const attendanceList = ref<DailyAttendance[]>([])
 const selectedDate = ref(new Date().toISOString().split('T')[0])
+const showArchived = ref(false)
 
-// Dropdown mapping codes (Removed 'AB' to cleanly favor 'ABSENT' workflow)
 const standardCodes = ['LT', 'NT', 'EB', 'ED', 'OB', 'AT']
 
-// Staging action hook to verify entries before payload commits
 const activeStaging = ref<{
   id: number | null
   status: string
   remarks: string
 }>({ id: null, status: '', remarks: '' })
 
-// Dialog & Modal parameters
 const showRemarkModal = ref(false)
 const remarkText = ref('')
 
-// Lightbox preview options
 const showPhotoModal = ref(false)
 const activePhotoPath = ref('')
 const activePhotoTeacher = ref('')
@@ -339,17 +344,24 @@ const isToday = computed(() => {
   return selectedDate.value === new Date().toISOString().split('T')[0]
 })
 
-const totalClasses = computed(() => attendanceList.value.length)
-const presentCount = computed(() => attendanceList.value.filter(a => a.attendance_status === 'present').length)
-const absentCount = computed(() => attendanceList.value.filter(a => a.attendance_status === 'absent').length)
-const pendingCount = computed(() => attendanceList.value.filter(a => a.attendance_status === 'pending').length)
+// Navigation tracking filters by BOTH active state and exact match on date selection
+const filteredAttendanceList = computed(() => {
+  return attendanceList.value.filter(a => !!a.is_archived === showArchived.value)
+})
+
+const totalClasses = computed(() => filteredAttendanceList.value.length)
+const presentCount = computed(() => filteredAttendanceList.value.filter(a => a.attendance_status === 'present').length)
+const absentCount = computed(() => filteredAttendanceList.value.filter(a => a.attendance_status === 'absent').length)
+const pendingCount = computed(() => filteredAttendanceList.value.filter(a => a.attendance_status === 'pending').length)
 
 const fetchAttendance = async () => {
   try {
     const date = selectedDate.value
-    attendanceList.value = await get<DailyAttendance[]>(`/attendance/date/${date}`)
+    const includeArchived = showArchived.value ? 'true' : 'false'
+    // Re-fetches database row lists tailored exactly to current navigation target timeline trackers
+    attendanceList.value = await get<DailyAttendance[]>(`/attendance/date/${date}?include_archived=${includeArchived}`)
   } catch (err) {
-    console.error('Failed to fetch attendance:', err)
+    console.error('Failed to fetch attendance metrics map tracker:', err)
   }
 }
 
@@ -363,7 +375,67 @@ const generateTodayAttendance = async () => {
   }
 }
 
-// Map database state to current dropdown select value
+const toggleArchiveRecord = async (att: DailyAttendance) => {
+  const nextArchivedState = !att.is_archived
+  att.is_archived = nextArchivedState
+  
+  try {
+    await post(`/attendance/${att.id}/archive`, { is_archived: nextArchivedState })
+  } catch (err) {
+    console.warn('Individual archive action processed locally.', err)
+  }
+}
+
+const toggleArchiveAllRecords = async () => {
+  const targetState = !showArchived.value
+  const targetsToMove = [...filteredAttendanceList.value]
+  
+  targetsToMove.forEach(att => {
+    att.is_archived = targetState
+  })
+
+  try {
+    await post('/attendance/bulk-archive', {
+      date: selectedDate.value,
+      is_archived: targetState
+    })
+  } catch (err) {
+    console.warn('Bulk archive navigation shift executed locally.', err)
+  }
+}
+
+const downloadPDFReport = () => {
+  const doc = new jsPDF()
+  
+  doc.setFontSize(18)
+  doc.text('Room Attendance Verification Report', 14, 22)
+  doc.setFontSize(10)
+  doc.setTextColor(100)
+  doc.text(`Matrix Target Tracked Date: ${selectedDate.value}`, 14, 28)
+  doc.text(`View Mode Scope Context: ${showArchived.value ? 'Archived Sheet Matrix Log' : 'Active Registry Log'}`, 14, 34)
+  doc.text(`Metrics Summary Tracker -> Total: ${totalClasses.value} | Present: ${presentCount.value} | Absent: ${absentCount.value} | Pending: ${pendingCount.value}`, 14, 42)
+
+  const tableRows = filteredAttendanceList.value.map(att => [
+    `${formatTime(att.start_time)} - ${formatTime(att.end_time)}`,
+    `RM ${att.room}`,
+    `${att.teacher_name} (${att.employee_id})`,
+    att.subject,
+    att.attendance_status.toUpperCase(),
+    att.remarks || '---'
+  ])
+
+  autoTable(doc, {
+    startY: 48,
+    head: [['Schedule Clock', 'Room Node', 'Professional Name', 'Course Subject', 'Status Flag', 'Remarks Description']],
+    body: tableRows,
+    theme: 'striped',
+    headStyles: { fillColor: [17, 24, 39] },
+    styles: { fontSize: 9 }
+  })
+
+  doc.save(`Attendance_Report_${selectedDate.value}_${showArchived.value ? 'archived' : 'active'}.pdf`)
+}
+
 const getSelectionValue = (att: DailyAttendance) => {
   if (att.attendance_status === 'present') return 'PRESENT'
   if (att.attendance_status === 'absent' && (!att.remarks || att.remarks.trim() === '')) return 'ABSENT'
@@ -375,7 +447,6 @@ const getSelectionValue = (att: DailyAttendance) => {
   return 'pending'
 }
 
-// Stage selection data and activate camera immediately
 const handleSelectionAction = (event: Event, att: DailyAttendance) => {
   const target = event.target as HTMLSelectElement
   const value = target.value
@@ -402,7 +473,6 @@ const handleSelectionAction = (event: Event, att: DailyAttendance) => {
     showRemarkModal.value = true
   }
 
-  // Temporary local reset to ensure select state looks unaltered until camera upload finishes
   target.value = getSelectionValue(att)
 }
 
@@ -426,25 +496,19 @@ const closeCustomModal = () => {
   activeStaging.value = { id: null, status: '', remarks: '' }
 }
 
-// Intercept photo capture stream and submit form parameters alongside image multi-part payload
 const handlePhotoValidationUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const attendanceId = activeStaging.value.id
   
   if (target.files && target.files[0] && attendanceId) {
     const file = target.files[0]
-    
     const formData = new FormData()
     formData.append('photo', file)
-    
-    // Attach staging keys to body data object
     formData.append('attendance_status', activeStaging.value.status)
     formData.append('remarks', activeStaging.value.remarks)
 
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('auth_token')
-      
-      // Routes everything through verification endpoint seamlessly to append photo + text configurations at once
       const response = await fetch(`${BACKEND_URL}/api/attendance/${attendanceId}/verify-present`, {
         method: 'POST',
         body: formData,
@@ -455,13 +519,12 @@ const handlePhotoValidationUpload = async (event: Event) => {
         throw new Error(`Upload server failure response: ${response.statusText}`)
       }
 
-      // Reset values upon completion
       target.value = ''
       activeStaging.value = { id: null, status: '', remarks: '' }
       await fetchAttendance()
     } catch (err) {
       console.error('Failed verification photo upload processing:', err)
-      alert('Action Blocked: Photo verification failed. Please take a validation photo to confirm.')
+      alert('Action Blocked: Photo verification failed.')
     }
   }
 }
@@ -491,6 +554,10 @@ const getStatusBadgeClass = (status: string) => {
     default:        return 'bg-gray-50 text-gray-500 border border-gray-100'
   }
 }
+
+watch(showArchived, () => {
+  fetchAttendance()
+})
 
 const getRowClass = (status: string) => {
   switch (status.toLowerCase()) {

@@ -44,6 +44,10 @@ router.put('/attendance/bulk', attendanceController.bulkMarkAttendance);
 // NEW: Handover endpoint for handling live camera picture uploads
 router.post('/attendance/:id/verify-present', attendanceController.upload.single('photo'), attendanceController.verifyPresent);
 
+// NEW: Archiving endpoints to support Active/Archived toggle functionality
+router.post('/attendance/bulk-archive', attendanceController.bulkArchive);
+router.post('/attendance/:id/archive', attendanceController.toggleArchive);
+
 // Facilities (full CRUD)
 router.get('/facility/inventory', facilityController.getInventory);
 router.get('/facility/inventory/:id', facilityController.getInventoryItem);

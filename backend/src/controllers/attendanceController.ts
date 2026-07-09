@@ -16,40 +16,46 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ storage: storage });
 
+// Helper snippet for the SELECT query to keep code clean
+const baseSelectQuery = `
+  SELECT 
+    da.id,
+    da.teacher_id,
+    da.attendance_date,
+    da.day_of_week,
+    da.start_time,
+    da.end_time,
+    da.subject,
+    da.room,
+    da.grade_level,
+    da.section,
+    da.attendance_status,
+    da.time_marked,
+    da.remarks,
+    da.marked_by,
+    da.verification_photo,
+    da.is_archived, -- NEW: Added this column
+    u.full_name as teacher_name,
+    t.employee_id,
+    t.department,
+    u2.full_name as marked_by_name
+  FROM daily_attendance da
+  JOIN teachers t ON da.teacher_id = t.id
+  JOIN users u ON t.user_id = u.id
+  LEFT JOIN users u2 ON da.marked_by = u2.id
+`;
+
 // Get today's attendance for room checking
 export const getTodayAttendance = async (req: Request, res: Response) => {
   try {
     const today = new Date().toISOString().split('T')[0];
+    const includeArchived = req.query.include_archived === 'true';
     
-    const [attendance]: any = await pool.execute(`
-      SELECT 
-        da.id,
-        da.teacher_id,
-        da.attendance_date,
-        da.day_of_week,
-        da.start_time,
-        da.end_time,
-        da.subject,
-        da.room,
-        da.grade_level,
-        da.section,
-        da.attendance_status,
-        da.time_marked,
-        da.remarks,
-        da.marked_by,
-        da.verification_photo, -- Added this column
-        u.full_name as teacher_name,
-        t.employee_id,
-        t.department,
-        u2.full_name as marked_by_name
-      FROM daily_attendance da
-      JOIN teachers t ON da.teacher_id = t.id
-      JOIN users u ON t.user_id = u.id
-      LEFT JOIN users u2 ON da.marked_by = u2.id
-      WHERE da.attendance_date = ?
-      ORDER BY da.start_time ASC, da.room ASC
-    `, [today]);
-    
+    let query = baseSelectQuery + ` WHERE da.attendance_date = ?`;
+    if (!includeArchived) query += ` AND da.is_archived = 0`;
+    query += ` ORDER BY da.start_time ASC, da.room ASC`;
+
+    const [attendance]: any = await pool.execute(query, [today]);
     res.json(attendance);
   } catch (error) {
     console.error('Get today attendance error:', error);
@@ -61,36 +67,14 @@ export const getTodayAttendance = async (req: Request, res: Response) => {
 export const getAttendanceByDate = async (req: Request, res: Response) => {
   try {
     const { date } = req.params;
+    const includeArchived = req.query.include_archived === 'true';
     
-    const [attendance]: any = await pool.execute(`
-      SELECT 
-        da.id,
-        da.teacher_id,
-        da.attendance_date,
-        da.day_of_week,
-        da.start_time,
-        da.end_time,
-        da.subject,
-        da.room,
-        da.grade_level,
-        da.section,
-        da.attendance_status,
-        da.time_marked,
-        da.remarks,
-        da.marked_by,
-        da.verification_photo, -- Added this column
-        u.full_name as teacher_name,
-        t.employee_id,
-        t.department,
-        u2.full_name as marked_by_name
-      FROM daily_attendance da
-      JOIN teachers t ON da.teacher_id = t.id
-      JOIN users u ON t.user_id = u.id
-      LEFT JOIN users u2 ON da.marked_by = u2.id
-      WHERE da.attendance_date = ?
-      ORDER BY da.start_time ASC, da.room ASC
-    `, [date]);
+    let query = baseSelectQuery + ` WHERE da.attendance_date = ?`;
+    // NEW: Filter out archived records if the frontend doesn't specifically ask for them
+    if (!includeArchived) query += ` AND da.is_archived = 0`;
+    query += ` ORDER BY da.start_time ASC, da.room ASC`;
     
+    const [attendance]: any = await pool.execute(query, [date]);
     res.json(attendance);
   } catch (error) {
     console.error('Get attendance by date error:', error);
@@ -98,28 +82,29 @@ export const getAttendanceByDate = async (req: Request, res: Response) => {
   }
 };
 
-// NEW: Verify Present with Photo Upload
+// Verify Present with Photo Upload (UPDATED to handle custom remarks and statuses)
 export const verifyPresent = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
+    // NEW: Extract dynamic status and remarks sent from the Vue frontend
+    const { attendance_status = 'present', remarks = '' } = req.body; 
     const currentTime = new Date().toTimeString().split(' ')[0];
 
-    // Check if a file was actually uploaded
     if (!req.file) {
-      return res.status(400).json({ error: 'Verification photo is required to mark teacher as present.' });
+      return res.status(400).json({ error: 'Verification photo is required.' });
     }
 
-    // Save relative image path or URL to your database column
     const photoPath = `/uploads/verification_photos/${req.file.filename}`;
 
     const [result]: any = await pool.execute(
       `UPDATE daily_attendance 
-       SET attendance_status = 'present', 
+       SET attendance_status = ?, 
+           remarks = ?,
            time_marked = ?, 
            marked_by = ?,
            verification_photo = ? 
        WHERE id = ?`,
-      [currentTime, req.user.id, photoPath, id]
+      [attendance_status, remarks, currentTime, req.user.id, photoPath, id]
     );
 
     if (result.affectedRows === 0) {
@@ -136,7 +121,7 @@ export const verifyPresent = async (req: any, res: Response) => {
   }
 };
 
-// Mark attendance (Keep this for handling regular 'absent', 'late', etc.)
+// Mark attendance (Unchanged)
 export const markAttendance = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
@@ -209,5 +194,40 @@ export const bulkMarkAttendance = async (req: any, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   } finally {
     connection.release();
+  }
+};
+
+// NEW: Toggle Archive for a Single Record
+export const toggleArchive = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { is_archived } = req.body;
+    
+    await pool.execute(
+      `UPDATE daily_attendance SET is_archived = ? WHERE id = ?`,
+      [is_archived ? 1 : 0, id]
+    );
+    
+    res.json({ success: true, message: 'Archive status updated.' });
+  } catch (error) {
+    console.error('Single archive error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// NEW: Bulk Archive All Records for a Date
+export const bulkArchive = async (req: Request, res: Response) => {
+  try {
+    const { date, is_archived } = req.body;
+    
+    await pool.execute(
+      `UPDATE daily_attendance SET is_archived = ? WHERE attendance_date = ?`,
+      [is_archived ? 1 : 0, date]
+    );
+    
+    res.json({ success: true, message: 'Bulk archive status updated.' });
+  } catch (error) {
+    console.error('Bulk archive error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
