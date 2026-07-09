@@ -27,7 +27,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `daily_attendance`
 --
 
- CREATE TABLE `daily_attendance` (
+CREATE TABLE `daily_attendance` (
   `id` int(11) NOT NULL,
   `schedule_template_id` int(11) DEFAULT NULL,
   `teacher_id` int(11) NOT NULL,
@@ -45,7 +45,8 @@ SET time_zone = "+00:00";
   `marked_by` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `verification_photo` varchar(255) DEFAULT NULL
+  `verification_photo` varchar(255) DEFAULT NULL,
+  `is_archived` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
