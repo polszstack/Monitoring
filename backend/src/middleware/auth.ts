@@ -10,6 +10,11 @@ interface AuthRequest extends Request {
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+  // ✅ FIX: Allow browser CORS preflight checks to pass through without a token
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
   const authHeader = req.header('authorization');
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -32,6 +37,11 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 
 // Admin only middleware
 export const adminOnly = (req: AuthRequest, res: Response, next: NextFunction) => {
+  // ✅ FIX: Allow browser CORS preflight checks to pass through unblocked
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }

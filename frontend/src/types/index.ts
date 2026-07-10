@@ -91,6 +91,7 @@ export interface FacilityReport {
   actual_cost: number | null
   notes: string | null
   image_path: string | null
+  is_archived?: boolean | number
   reporter_name?: string
   assignee_name?: string
 }
@@ -111,6 +112,7 @@ export interface VisitorLog {
   badge_number: string | null
   status: 'checked_in' | 'checked_out'
   notes: string | null
+  is_archived?: boolean | number
 }
 
 export interface ApiResponse<T> {

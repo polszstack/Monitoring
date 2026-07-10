@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticateToken, adminOnly } from '../middleware/auth';
-import * as authController from '../controllers/authController';
 import { Request, Response } from 'express';
+import * as authController from '../controllers/authController';
 import * as teacherController from '../controllers/teacherController';
 import * as scheduleController from '../controllers/scheduleController';
 import * as attendanceController from '../controllers/attendanceController';
@@ -13,17 +13,22 @@ const router = express.Router();
 // Auth routes (public)
 router.post('/auth/login', authController.login);
 
-// All routes below require authentication + admin
+// All routes below require authentication
 router.use(authenticateToken);
-router.use(adminOnly);
 
-// Auth
-// Inline profile handler to avoid relying on a possibly-missing export in authController
+// Auth Profile
 router.get('/auth/profile', (req: Request, res: Response) => {
-    // authenticateToken middleware should have attached user info to req
     const user = (req as any).user || null;
     return res.json({ user });
 });
+
+// Facilities reporting routes are available to authenticated users
+router.get('/facility/stats', facilityController.getStats);
+router.get('/facility/reports', facilityController.getReports);
+router.post('/facility/reports', facilityController.addReport);
+
+// Admin-only routes below
+router.use(adminOnly);
 
 // Teachers
 router.get('/teachers', teacherController.getAllTeachers);
@@ -33,34 +38,36 @@ router.post('/teachers', teacherController.createTeacher);
 // Schedules
 router.get('/schedules', scheduleController.getScheduleTemplates);
 router.post('/schedules', scheduleController.createScheduleTemplate);
-router.post('/schedules/generate-attendance', scheduleController.generateDailyAttendance);
 
-// Attendance (optimized for room checking with picture verification support)
-router.get('/attendance/today', attendanceController.getTodayAttendance);
+// Attendance
 router.get('/attendance/date/:date', attendanceController.getAttendanceByDate);
 router.put('/attendance/:id', attendanceController.markAttendance);
 router.put('/attendance/bulk', attendanceController.bulkMarkAttendance);
 
-// NEW: Handover endpoint for handling live camera picture uploads
+// Attendance picture upload handler
 router.post('/attendance/:id/verify-present', attendanceController.upload.single('photo'), attendanceController.verifyPresent);
 
-// NEW: Archiving endpoints to support Active/Archived toggle functionality
+// Attendance Archiving
 router.post('/attendance/bulk-archive', attendanceController.bulkArchive);
 router.post('/attendance/:id/archive', attendanceController.toggleArchive);
 
-// Facilities (full CRUD)
-router.get('/facility/inventory', facilityController.getInventory);
-router.get('/facility/inventory/:id', facilityController.getInventoryItem);
-router.post('/facility/inventory', facilityController.createInventoryItem);
-router.put('/facility/inventory/:id', facilityController.updateInventoryItem);
-router.get('/facility/reports', facilityController.getReports);
-router.post('/facility/reports', facilityController.createReport);
-router.put('/facility/reports/:id', facilityController.updateReportStatus);
-router.get('/facility/stats', facilityController.getFacilityStats);
+// ==========================================
+// Facilities Management & Reporting Logs (Inventory Registry Disabled)
+// ==========================================
 
-// Visitors
+// Reporting Log Entries
+router.put('/facility/reports/:id', facilityController.updateReportStatus);
+
+// Reporting Retention & Archiving Core Controls
+router.put('/facility/reports/:id/archive', facilityController.toggleArchiveReport);
+router.post('/facility/reports/archive-daily', facilityController.archiveDailyReports);
+
+// ==========================================
+// Visitors Control Hub
+// ==========================================
 router.get('/visitors', visitorController.getVisitors);
 router.post('/visitors/check-in', visitorController.checkIn);
 router.put('/visitors/:id/check-out', visitorController.checkOut);
+router.put('/visitors/:id/archive', visitorController.archiveVisitor);
 
 export default router;

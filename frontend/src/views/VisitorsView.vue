@@ -85,6 +85,45 @@
           class="bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 focus:bg-white transition-all shadow-2sm cursor-pointer w-full sm:w-48"
         >
       </div>
+      <div class="flex justify-end mt-3">
+        <button 
+          @click="showArchived = !showArchived"
+          class="text-[11px] font-black uppercase tracking-wider text-amber-700 hover:text-amber-800 transition-colors"
+        >
+          📦 Archived Visitors ({{ archivedVisitors.length }})
+        </button>
+      </div>
+    </div>
+
+    <div v-if="showArchived" class="rounded-2xl border border-amber-100 bg-amber-50/40 p-4 space-y-3">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-sm font-black text-amber-700">Archived Visitor History</h3>
+          <p class="text-xs text-amber-600">Completed visits are stored here so the main queue stays focused on active entries.</p>
+        </div>
+        <button @click="showArchived = false" class="text-[11px] font-black uppercase tracking-wider text-amber-700 hover:text-amber-800">Hide</button>
+      </div>
+
+      <div v-if="archivedVisitors.length === 0" class="text-sm text-amber-700">No archived visitors yet.</div>
+      <div v-else class="space-y-2">
+        <div v-for="visitor in archivedVisitors" :key="visitor.id" class="rounded-xl border border-amber-200 bg-white/80 p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <div class="font-extrabold text-gray-900">{{ visitor.visitor_name }}</div>
+            <div class="text-xs text-gray-500">{{ visitor.purpose_of_visit }}</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-xs font-semibold text-gray-500">
+              Checked out: {{ formatDateTime(visitor.check_out_time || visitor.check_in_time) }}
+            </div>
+            <button 
+              @click="viewDetails(visitor)" 
+              class="text-[11px] font-black uppercase tracking-wider text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              👁️ View
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -179,10 +218,17 @@
                     🚨 Out
                   </button>
                   <button 
+                    v-if="visitor.status === 'checked_out'"
+                    @click="archiveVisitor(visitor.id)"
+                    class="text-[11px] font-black uppercase tracking-wider text-amber-600 hover:text-amber-800 transition-colors"
+                  >
+                    📦 Archive
+                  </button>
+                  <button 
                     @click="viewDetails(visitor)" 
                     class="text-[11px] font-black uppercase tracking-wider text-gray-900 hover:text-gray-600 transition-colors"
                   >
-                    ✏️ View
+                    👁️ View
                   </button>
                 </div>
               </td>
@@ -192,6 +238,7 @@
       </div>
     </div>
 
+    <!-- Check-In Modal -->
     <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0">
       <div v-if="showCheckInModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-gray-950/40 backdrop-blur-sm" @click="showCheckInModal = false"></div>
@@ -304,12 +351,16 @@
       </div>
     </transition>
 
+    <!-- Details Modal -->
     <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0">
       <div v-if="showDetailsModal && selectedVisitor" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-gray-950/40 backdrop-blur-sm" @click="showDetailsModal = false"></div>
-        <div class="relative bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 animate-scale-up z-10 space-y-5">
+        <div class="relative bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 animate-scale-up z-10 space-y-5 max-h-[90vh] overflow-y-auto">
           <div class="flex items-center justify-between pb-3 border-b border-gray-50">
-            <h3 class="text-base font-black text-gray-900 tracking-tight">📋 Visitor Profile Details</h3>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-black text-gray-900 tracking-tight">📋 Visitor Profile</h3>
+              <span v-if="selectedVisitor.is_archived" class="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">Archived</span>
+            </div>
             <button @click="showDetailsModal = false" class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 text-xl transition-all">&times;</button>
           </div>
           
@@ -343,13 +394,14 @@
             <div class="border-t border-gray-50 pt-4">
               <p class="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">🪪 ID Identification Proof</p>
               <p class="font-bold text-gray-900 text-sm">
-                {{ selectedVisitor.id_proof_type }} — <span class="font-mono">{{ selectedVisitor.id_proof_number }}</span>
+                {{ selectedVisitor.id_proof_type || 'N/A' }} <span v-if="selectedVisitor.id_proof_type">—</span> 
+                <span class="font-mono">{{ selectedVisitor.id_proof_number || 'N/A' }}</span>
               </p>
             </div>
 
             <div class="border-t border-gray-50 pt-4">
               <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">📌 Declared Purpose</p>
-              <p class="font-medium text-gray-700 text-sm bg-gray-50/60 p-3 rounded-xl border border-gray-100/60 leading-relaxed">{{ selectedVisitor.purpose_of_visit }}</p>
+              <p class="font-medium text-gray-700 text-sm bg-gray-50/60 p-3 rounded-xl border border-gray-100/60 leading-relaxed">{{ selectedVisitor.purpose_of_visit || 'N/A' }}</p>
             </div>
 
             <div class="grid grid-cols-2 gap-4 text-xs font-semibold border-t border-gray-50 pt-4">
@@ -400,6 +452,15 @@
                 🚨 Check Out Visitor
               </button>
             </div>
+
+            <div v-if="selectedVisitor.status === 'checked_out' && !selectedVisitor.is_archived" class="pt-2">
+              <button 
+                @click="archiveVisitorFromDetails" 
+                class="w-full text-xs uppercase tracking-wider font-black bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl shadow-sm transition-all active:scale-[0.99]"
+              >
+                📦 Archive Visitor
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -420,6 +481,7 @@ const statusFilter = ref('')
 const dateFilter = ref('')
 const showCheckInModal = ref(false)
 const showDetailsModal = ref(false)
+const showArchived = ref(false)
 const selectedVisitor = ref<VisitorLog | null>(null)
 
 const newVisitor = ref({
@@ -436,23 +498,26 @@ const newVisitor = ref({
   notes: ''
 })
 
+const activeVisitors = computed(() => visitors.value.filter(v => !v.is_archived))
+const archivedVisitors = computed(() => visitors.value.filter(v => !!v.is_archived))
+
 const todayVisitors = computed(() => {
   const today = new Date().toISOString().split('T')[0]
-  return visitors.value.filter(v => v.check_in_time?.startsWith(today)).length
+  return activeVisitors.value.filter(v => v.check_in_time?.startsWith(today)).length
 })
 
 const checkedInCount = computed(() => 
-  visitors.value.filter(v => v.status === 'checked_in').length
+  activeVisitors.value.filter(v => v.status === 'checked_in').length
 )
 
 const checkedOutCount = computed(() => 
-  visitors.value.filter(v => v.status === 'checked_out').length
+  activeVisitors.value.filter(v => v.status === 'checked_out').length
 )
 
-const totalVisitors = computed(() => visitors.value.length)
+const totalVisitors = computed(() => activeVisitors.value.length)
 
 const filteredVisitors = computed(() => {
-  return visitors.value.filter(visitor => {
+  return activeVisitors.value.filter(visitor => {
     const matchesSearch = !searchQuery.value || 
       visitor.visitor_name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       visitor.purpose_of_visit?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -469,7 +534,7 @@ const filteredVisitors = computed(() => {
 
 const fetchVisitors = async () => {
   try {
-    visitors.value = await get<VisitorLog[]>('/visitors')
+    visitors.value = await get<VisitorLog[]>('/visitors?include_archived=true')
   } catch (err) {
     console.error('Failed to fetch visitors:', err)
   }
@@ -498,6 +563,7 @@ const checkOut = async (id: number) => {
       await fetchVisitors()
     } catch (err) {
       console.error('Failed to check out visitor:', err)
+      await fetchVisitors()
     }
   }
 }
@@ -505,6 +571,33 @@ const checkOut = async (id: number) => {
 const checkOutFromDetails = async () => {
   if (selectedVisitor.value) {
     await checkOut(selectedVisitor.value.id)
+    showDetailsModal.value = false
+  }
+}
+
+const archiveVisitor = async (id: number) => {
+  const target = visitors.value.find(visitor => visitor.id === id)
+  if (!target || target.is_archived) return
+
+  if (target.status !== 'checked_out') {
+    alert('Please check out the visitor before archiving.')
+    return
+  }
+
+  if (!confirm('Archive this completed visitor log to keep the main list tidy?')) return
+
+  try {
+    await put(`/visitors/${id}/archive`)
+    await fetchVisitors()
+  } catch (err) {
+    console.error('Failed to archive visitor:', err)
+    await fetchVisitors()
+  }
+}
+
+const archiveVisitorFromDetails = async () => {
+  if (selectedVisitor.value) {
+    await archiveVisitor(selectedVisitor.value.id)
     showDetailsModal.value = false
   }
 }
