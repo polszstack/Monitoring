@@ -79,6 +79,7 @@ export const checkOut = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Visitor not found or already checked out' });
     }
 
+    // Only update status to checked_out - DO NOT auto-archive
     const [result]: any = await pool.execute(
       'UPDATE visitor_logs SET check_out_time = NOW(), status = ? WHERE id = ? AND status = ?',
       ['checked_out', id, 'checked_in']
@@ -88,11 +89,8 @@ export const checkOut = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Visitor not found or already checked out' });
     }
 
-    // After checkout, automatically archive to clean up the main view
-    await pool.execute(
-      'UPDATE visitor_logs SET is_archived = 1 WHERE id = ? AND status = ?',
-      [id, 'checked_out']
-    );
+    // REMOVED: Auto-archive functionality
+    // Visitors will remain in active list until manually archived
 
     // Get the updated visitor data
     const [updated]: any = await pool.execute(

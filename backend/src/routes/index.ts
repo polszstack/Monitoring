@@ -1,4 +1,4 @@
-import express from 'express';
+ import express from 'express';
 import { authenticateToken, adminOnly } from '../middleware/auth';
 import { Request, Response } from 'express';
 import * as authController from '../controllers/authController';

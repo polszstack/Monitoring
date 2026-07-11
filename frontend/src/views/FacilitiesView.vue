@@ -5,7 +5,17 @@
         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">Facility Issue Logging</h2>
         <p class="mt-2 text-sm text-gray-500">Report facility anomalies, track room repair progress states, and review daily active defects.</p>
       </div>
-      <div class="flex gap-3 self-start md:self-auto w-full md:w-auto">
+      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <button 
+          @click="exportPDF" 
+          :disabled="filteredReports.length === 0"
+          class="text-xs uppercase tracking-wider font-black bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-3 rounded-xl shadow-sm transition-all active:scale-[0.98] w-full sm:w-auto text-center flex items-center justify-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Export PDF
+        </button>
         <button 
           @click="quickReport" 
           class="flex-1 md:flex-initial text-xs uppercase tracking-wider font-black bg-red-600 text-white hover:bg-red-700 px-5 py-3 rounded-xl shadow-sm transition-all active:scale-[0.98] inline-flex items-center justify-center gap-1.5"
@@ -173,6 +183,7 @@
       </div>
     </div>
 
+    <!-- Report Modal -->
     <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0">
       <div v-if="showReportModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-gray-950/40 backdrop-blur-sm" @click="showReportModal = false"></div>
@@ -276,6 +287,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useApi } from '@/composables/useApi'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import type { FacilityReport } from '@/types'
 
 const { get, post, put } = useApi()
@@ -335,11 +348,10 @@ const quickReport = () => {
 const fetchReports = async () => {
   loadingReports.value = true
   try {
-    // Append include_archived dynamically depending on active UI view toggle
     reports.value = await get<FacilityReport[]>(`/facility/reports?include_archived=${viewArchived.value}`)
   } catch (err) {
     console.error('Failed to fetch reports:', err)
-  } finally { // ✅ Fixed
+  } finally {
     loadingReports.value = false
   }
 }
@@ -402,6 +414,97 @@ const archiveDailyLog = async () => {
   } catch (err: any) {
     alert('Bulk archival process failure: ' + err.message)
   }
+}
+
+const exportPDF = () => {
+  if (filteredReports.value.length === 0) return
+
+  const doc = new jsPDF()
+  const pageWidth = doc.internal.pageSize.getWidth()
+  
+  // Header
+  doc.setFontSize(20)
+  doc.setTextColor(0, 0, 0)
+  doc.text('Facility Issue Report', pageWidth / 2, 20, { align: 'center' })
+  
+  doc.setFontSize(10)
+  doc.setTextColor(100)
+  const dateStr = new Date().toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+  doc.text(`Generated: ${dateStr}`, pageWidth / 2, 28, { align: 'center' })
+  
+  // Summary
+  doc.setFontSize(9)
+  doc.setTextColor(80)
+  const viewMode = viewArchived.value ? 'Archived Records' : 'Active Records'
+  doc.text(
+    `Summary: Total: ${filteredReports.value.length} | In Progress: ${progressCount.value} | Resolved: ${resolvedCount.value} | View: ${viewMode}`,
+    pageWidth / 2,
+    36,
+    { align: 'center' }
+  )
+
+  // Table
+  const tableData = filteredReports.value.map(report => [
+    report.report_number || 'N/A',
+    report.item_name || 'N/A',
+    report.facility_type || 'N/A',
+    report.location || 'N/A',
+    report.room_number || 'N/A',
+    report.status || 'N/A',
+    report.priority || 'N/A',
+    report.reporter_name || 'System User',
+    report.reported_date ? new Date(report.reported_date).toLocaleDateString() : 'N/A'
+  ])
+
+  autoTable(doc, {
+    startY: 42,
+    head: [['Ticket #', 'Item', 'Category', 'Location', 'Room', 'Status', 'Priority', 'Reporter', 'Date']],
+    body: tableData,
+    theme: 'striped',
+    headStyles: { 
+      fillColor: [17, 24, 39],
+      textColor: [255, 255, 255],
+      fontSize: 8,
+      fontStyle: 'bold'
+    },
+    styles: { 
+      fontSize: 7,
+      cellPadding: 2
+    },
+    columnStyles: {
+      0: { cellWidth: 25 },
+      1: { cellWidth: 30 },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 18 },
+      5: { cellWidth: 20 },
+      6: { cellWidth: 18 },
+      7: { cellWidth: 25 },
+      8: { cellWidth: 22 }
+    }
+  })
+
+  // Footer
+  const pageCount = doc.internal.pages.length
+  for (let i = 1; i < pageCount; i++) {
+    doc.setPage(i)
+    doc.setFontSize(8)
+    doc.setTextColor(150)
+    doc.text(
+      `Page ${i} of ${pageCount - 1}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    )
+  }
+
+  doc.save(`Facility_Report_${new Date().toISOString().split('T')[0]}.pdf`)
 }
 
 const getCategoryEmoji = (cat: string) => {

@@ -1,16 +1,28 @@
-<template>
+ <template>
   <div class="space-y-8 animate-fade-in pb-12">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-gray-100 pb-6">
       <div>
         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">Visitor Logs</h2>
         <p class="mt-2 text-sm text-gray-500">Track and manage securely real-time visitor check-ins and check-outs.</p>
       </div>
-      <button 
-        @click="showCheckInModal = true" 
-        class="text-xs uppercase tracking-wider font-black bg-gray-900 text-white hover:bg-gray-800 px-5 py-3 rounded-xl shadow-sm transition-all active:scale-[0.98] self-start md:self-auto w-full md:w-auto text-center"
-      >
-        + New Visitor Check-In
-      </button>
+      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <button 
+          @click="exportPDF" 
+          :disabled="activeVisitors.length === 0"
+          class="text-xs uppercase tracking-wider font-black bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-3 rounded-xl shadow-sm transition-all active:scale-[0.98] w-full sm:w-auto text-center flex items-center justify-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Export PDF
+        </button>
+        <button 
+          @click="showCheckInModal = true" 
+          class="text-xs uppercase tracking-wider font-black bg-gray-900 text-white hover:bg-gray-800 px-5 py-3 rounded-xl shadow-sm transition-all active:scale-[0.98] w-full sm:w-auto text-center"
+        >
+          + New Visitor Check-In
+        </button>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
@@ -128,7 +140,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-100">
+        <table class="min-w-full divide-y divide-gray-100" id="visitor-table">
           <thead class="bg-gray-50">
             <tr>
               <th class="px-5 py-3.5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Visitor</th>
@@ -471,6 +483,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useApi } from '@/composables/useApi'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import type { VisitorLog } from '@/types'
 
 const { get, post, put, loading } = useApi()
@@ -616,6 +630,96 @@ const formatDateTime = (dateTime: string) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+const exportPDF = () => {
+  if (activeVisitors.value.length === 0) return
+
+  const doc = new jsPDF()
+  const pageWidth = doc.internal.pageSize.getWidth()
+  
+  // Header
+  doc.setFontSize(20)
+  doc.setTextColor(0, 0, 0)
+  doc.text('Visitor Logs Report', pageWidth / 2, 20, { align: 'center' })
+  
+  doc.setFontSize(10)
+  doc.setTextColor(100)
+  const dateStr = new Date().toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+  doc.text(`Generated: ${dateStr}`, pageWidth / 2, 28, { align: 'center' })
+  
+  // Summary
+  doc.setFontSize(9)
+  doc.setTextColor(80)
+  doc.text(
+    `Summary: Total: ${totalVisitors.value} | Today: ${todayVisitors.value} | Inside: ${checkedInCount.value} | Checked Out: ${checkedOutCount.value}`,
+    pageWidth / 2,
+    36,
+    { align: 'center' }
+  )
+
+  // Table
+  const tableData = filteredVisitors.value.map(visitor => [
+    visitor.visitor_name,
+    visitor.contact_number || 'N/A',
+    visitor.purpose_of_visit || 'N/A',
+    visitor.person_to_visit || 'N/A',
+    visitor.department || 'N/A',
+    visitor.id_proof_type ? `${visitor.id_proof_type} - ${visitor.id_proof_number}` : 'Not provided',
+    formatDateTime(visitor.check_in_time),
+    visitor.check_out_time ? formatDateTime(visitor.check_out_time) : 'Still Inside',
+    visitor.status === 'checked_in' ? 'Inside' : 'Left'
+  ])
+
+  autoTable(doc, {
+    startY: 42,
+    head: [['Visitor', 'Contact', 'Purpose', 'Visiting', 'Dept.', 'ID Proof', 'Check In', 'Check Out', 'Status']],
+    body: tableData,
+    theme: 'striped',
+    headStyles: { 
+      fillColor: [17, 24, 39],
+      textColor: [255, 255, 255],
+      fontSize: 8,
+      fontStyle: 'bold'
+    },
+    styles: { 
+      fontSize: 7,
+      cellPadding: 2
+    },
+    columnStyles: {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 25 },
+      2: { cellWidth: 30 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 20 },
+      5: { cellWidth: 25 },
+      6: { cellWidth: 22 },
+      7: { cellWidth: 22 },
+      8: { cellWidth: 18 }
+    }
+  })
+
+  // Footer
+  const pageCount = doc.internal.pages.length
+  for (let i = 1; i < pageCount; i++) {
+    doc.setPage(i)
+    doc.setFontSize(8)
+    doc.setTextColor(150)
+    doc.text(
+      `Page ${i} of ${pageCount - 1}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    )
+  }
+
+  doc.save(`Visitor_Logs_${new Date().toISOString().split('T')[0]}.pdf`)
 }
 
 onMounted(() => {
