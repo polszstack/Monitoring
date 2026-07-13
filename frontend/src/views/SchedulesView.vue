@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-gray-100 pb-6">
       <div>
         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">Schedule Templates</h2>
-        <p class="mt-2 text-sm text-gray-500">Construct, configure, and manage institutional master weekly class schedules for teachers[cite: 9].</p>
+        <p class="mt-2 text-sm text-gray-500">Construct, configure, and manage institutional master weekly class schedules.</p>
       </div>
       <button 
         @click="showAddModal = true" 
@@ -96,19 +96,25 @@
             <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 text-xl transition-all">&times;</button>
           </div>
 
+          <!-- Error Display -->
+          <div v-if="submitError" class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+            <strong>Error:</strong> {{ submitError }}
+          </div>
+
           <form @submit.prevent="addSchedule" class="space-y-4">
             <div>
-              <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Teacher Allocation</label>
-              <select v-model="newSchedule.teacher_id" required class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 focus:bg-white transition-all shadow-2sm cursor-pointer">
-                <option value="">Select Teacher</option>
-                <option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
-                  🏢 {{ teacher.full_name }} ({{ teacher.employee_id }})
-                </option>
-              </select>
+              <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Teacher Name *</label>
+              <input 
+                v-model="newSchedule.teacher_name" 
+                type="text" 
+                required
+                class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 focus:bg-white transition-all shadow-2sm" 
+                placeholder="e.g. John Doe"
+              >
             </div>
 
             <div>
-              <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Target Day of Week</label>
+              <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Target Day of Week *</label>
               <select v-model="newSchedule.day_of_week" required class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 focus:bg-white transition-all shadow-2sm cursor-pointer">
                 <option value="">Select Day</option>
                 <option v-for="day in days" :key="day" :value="day">🗓️ {{ day }}</option>
@@ -117,17 +123,17 @@
 
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Start Time</label>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Start Time *</label>
                 <input v-model="newSchedule.start_time" type="time" required class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 focus:bg-white transition-all shadow-2sm">
               </div>
               <div>
-                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">End Time</label>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">End Time *</label>
                 <input v-model="newSchedule.end_time" type="time" required class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 focus:bg-white transition-all shadow-2sm">
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Subject Designation</label>
+              <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1.5">Subject Designation *</label>
               <input v-model="newSchedule.subject" type="text" required class="w-full bg-gray-50/60 border border-gray-200 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 focus:bg-white transition-all shadow-2sm" placeholder="e.g. Advanced Mathematics">
             </div>
 
@@ -157,9 +163,10 @@
               </button>
               <button 
                 type="submit" 
-                class="text-xs uppercase tracking-wider font-black bg-gray-950 hover:bg-gray-800 text-white px-5 py-3 rounded-xl shadow-md transition-all active:scale-[0.98]"
+                :disabled="isSubmitting"
+                class="text-xs uppercase tracking-wider font-black bg-gray-950 hover:bg-gray-800 text-white px-5 py-3 rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Template
+                {{ isSubmitting ? 'Saving...' : 'Save Template' }}
               </button>
             </div>
           </form>
@@ -187,22 +194,17 @@ type ScheduleTemplate = {
   section?: string
 }
 
-type Teacher = {
-  id: string | number
-  full_name: string
-  employee_id?: string
-}
-
 const { get, post, loading } = useApi()
 
 const schedules = ref<ScheduleTemplate[]>([])
-const teachers = ref<Teacher[]>([])
 const showAddModal = ref(false)
+const isSubmitting = ref(false)
+const submitError = ref<string | null>(null)
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 const newSchedule = ref({
-  teacher_id: '',
+  teacher_name: '',
   day_of_week: '',
   start_time: '',
   end_time: '',
@@ -215,27 +217,70 @@ const newSchedule = ref({
 const fetchSchedules = async () => {
   try {
     schedules.value = await get<ScheduleTemplate[]>('/schedules')
-  } catch (err) {
+  } catch (err: any) {
     console.error('Failed to fetch schedules:', err)
-  }
-}
-
-const fetchTeachers = async () => {
-  try {
-    teachers.value = await get<Teacher[]>('/teachers')
-  } catch (err) {
-    console.error('Failed to fetch teachers:', err)
+    alert('Failed to load schedules: ' + (err.message || 'Unknown error'))
   }
 }
 
 const addSchedule = async () => {
+  submitError.value = null
+  isSubmitting.value = true
+  
+  // Validate required fields
+  if (!newSchedule.value.teacher_name.trim()) {
+    submitError.value = 'Teacher name is required'
+    isSubmitting.value = false
+    return
+  }
+  
+  if (!newSchedule.value.day_of_week) {
+    submitError.value = 'Day of week is required'
+    isSubmitting.value = false
+    return
+  }
+  
+  if (!newSchedule.value.start_time) {
+    submitError.value = 'Start time is required'
+    isSubmitting.value = false
+    return
+  }
+  
+  if (!newSchedule.value.end_time) {
+    submitError.value = 'End time is required'
+    isSubmitting.value = false
+    return
+  }
+  
+  if (!newSchedule.value.subject.trim()) {
+    submitError.value = 'Subject is required'
+    isSubmitting.value = false
+    return
+  }
+
   try {
-    await post('/schedules', newSchedule.value)
+    console.log('📤 Sending schedule data:', newSchedule.value)
+    
+    const response = await post('/schedules', newSchedule.value)
+    console.log('✅ Schedule created successfully:', response)
+    
     showAddModal.value = false
-    newSchedule.value = { teacher_id: '', day_of_week: '', start_time: '', end_time: '', subject: '', room: '', grade_level: '', section: '' }
+    newSchedule.value = { 
+      teacher_name: '', 
+      day_of_week: '', 
+      start_time: '', 
+      end_time: '', 
+      subject: '', 
+      room: '', 
+      grade_level: '', 
+      section: '' 
+    }
     await fetchSchedules()
-  } catch (err) {
-    console.error('Failed to add schedule:', err)
+  } catch (err: any) {
+    console.error('❌ Failed to add schedule:', err)
+    submitError.value = err.message || 'Failed to save schedule. Please check the console for details.'
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -259,6 +304,5 @@ const getDayClass = (day: string) => {
 
 onMounted(() => {
   fetchSchedules()
-  fetchTeachers()
 })
 </script>

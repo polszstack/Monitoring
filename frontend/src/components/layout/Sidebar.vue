@@ -103,7 +103,7 @@ const authStore = useAuthStore()
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Teachers', href: '/teachers', icon: UserGroupIcon },
+   
   { name: 'Schedules', href: '/schedules', icon: CalendarIcon },
   { name: 'Attendance', href: '/attendance', icon: ClipboardDocumentCheckIcon },
   { name: 'Facilities', href: '/facilities', icon: BuildingOfficeIcon },

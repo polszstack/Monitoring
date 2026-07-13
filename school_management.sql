@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 10, 2026 at 05:46 PM
+-- Generation Time: Jul 13, 2026 at 06:39 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -54,30 +54,16 @@ CREATE TABLE `daily_attendance` (
 --
 
 INSERT INTO `daily_attendance` (`id`, `schedule_template_id`, `teacher_id`, `attendance_date`, `day_of_week`, `start_time`, `end_time`, `subject`, `room`, `grade_level`, `section`, `attendance_status`, `time_marked`, `remarks`, `marked_by`, `created_at`, `updated_at`, `verification_photo`, `is_archived`) VALUES
-(1, 5, 2, '2026-07-06', 'Monday', '08:00:00', '09:00:00', 'Physics', 'Lab 1', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-09 12:06:31', NULL, 1),
-(2, 1, 1, '2026-07-06', 'Monday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-09 12:06:31', NULL, 1),
-(3, 6, 2, '2026-07-06', 'Monday', '09:00:00', '10:00:00', 'Chemistry', 'Lab 2', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-09 12:06:31', NULL, 1),
-(4, 2, 1, '2026-07-06', 'Monday', '09:00:00', '10:00:00', 'Geometry', 'Room 102', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-04 23:04:29', '2026-07-09 12:06:31', NULL, 1),
-(5, 3, 1, '2026-07-07', 'Tuesday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'present', '21:25:23', NULL, 1, '2026-07-06 11:56:25', '2026-07-09 12:07:22', NULL, 1),
-(6, 7, 2, '2026-07-07', 'Tuesday', '10:00:00', '11:00:00', 'Biology', 'Lab 3', 'Grade 11', 'Section A', 'absent', '20:52:06', NULL, 1, '2026-07-06 11:56:25', '2026-07-09 12:07:23', NULL, 1),
-(7, 4, 1, '2026-07-08', 'Wednesday', '10:00:00', '11:00:00', 'Calculus', 'Room 201', 'Grade 11', 'Section C', 'absent', '21:17:04', 'LT', 1, '2026-07-07 12:11:55', '2026-07-08 13:17:04', NULL, 0),
-(8, 8, 2, '2026-07-09', 'Thursday', '08:00:00', '10:00:00', 'Math', 'room 302', 'bsis', '2101', 'present', '21:15:26', 'AB', 1, '2026-07-08 10:30:26', '2026-07-09 23:29:25', '/uploads/verification_photos/verify-1783507229376-826963807.png', 0),
-(9, 4, 1, '2026-07-01', 'Wednesday', '10:00:00', '11:00:00', 'Calculus', 'Room 201', 'Grade 11', 'Section C', 'pending', NULL, NULL, NULL, '2026-07-08 13:26:00', '2026-07-08 13:26:00', NULL, 0),
-(10, 1, 1, '2026-07-13', 'Monday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-08 13:26:14', '2026-07-08 13:26:14', NULL, 0),
-(11, 2, 1, '2026-07-13', 'Monday', '09:00:00', '10:00:00', 'Geometry', 'Room 102', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-08 13:26:14', '2026-07-08 13:26:14', NULL, 0),
-(12, 5, 2, '2026-07-13', 'Monday', '08:00:00', '09:00:00', 'Physics', 'Lab 1', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-08 13:26:14', '2026-07-08 13:26:14', NULL, 0),
-(13, 6, 2, '2026-07-13', 'Monday', '09:00:00', '10:00:00', 'Chemistry', 'Lab 2', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-08 13:26:14', '2026-07-08 13:26:14', NULL, 0),
-(14, 4, 1, '2026-07-15', 'Wednesday', '10:00:00', '11:00:00', 'Calculus', 'Room 201', 'Grade 11', 'Section C', 'pending', NULL, NULL, NULL, '2026-07-08 13:26:38', '2026-07-09 12:06:53', NULL, 0),
-(15, 3, 1, '2026-07-14', 'Tuesday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-08 13:38:39', '2026-07-08 13:38:39', NULL, 0),
-(16, 7, 2, '2026-07-14', 'Tuesday', '10:00:00', '11:00:00', 'Biology', 'Lab 3', 'Grade 11', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-08 13:38:39', '2026-07-08 13:38:39', NULL, 0),
-(17, 8, 2, '2026-07-16', 'Thursday', '08:00:00', '10:00:00', 'Math', 'room 302', 'bsis', '2101', 'pending', NULL, NULL, NULL, '2026-07-08 13:38:42', '2026-07-08 13:38:42', NULL, 0),
-(18, 1, 1, '2026-07-27', 'Monday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-08 13:38:46', '2026-07-08 13:38:46', NULL, 0),
-(19, 2, 1, '2026-07-27', 'Monday', '09:00:00', '10:00:00', 'Geometry', 'Room 102', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-08 13:38:46', '2026-07-08 13:38:46', NULL, 0),
-(20, 5, 2, '2026-07-27', 'Monday', '08:00:00', '09:00:00', 'Physics', 'Lab 1', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-08 13:38:46', '2026-07-08 13:38:46', NULL, 0),
-(21, 6, 2, '2026-07-27', 'Monday', '09:00:00', '10:00:00', 'Chemistry', 'Lab 2', 'Grade 9', 'Section B', 'pending', NULL, NULL, NULL, '2026-07-08 13:38:46', '2026-07-08 13:38:46', NULL, 0),
-(22, 4, 1, '2026-07-29', 'Wednesday', '10:00:00', '11:00:00', 'Calculus', 'Room 201', 'Grade 11', 'Section C', 'pending', NULL, NULL, NULL, '2026-07-09 23:19:30', '2026-07-09 23:19:30', NULL, 0),
-(23, 3, 1, '2026-07-21', 'Tuesday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-09 23:19:45', '2026-07-09 23:19:45', NULL, 0),
-(24, 7, 2, '2026-07-21', 'Tuesday', '10:00:00', '11:00:00', 'Biology', 'Lab 3', 'Grade 11', 'Section A', 'pending', NULL, NULL, NULL, '2026-07-09 23:19:45', '2026-07-09 23:19:45', NULL, 0);
+(2, 5, 2, '2026-07-13', 'Monday', '09:00:00', '10:00:00', 'dawdawd', '234', '23423', 'efsfdfdsf', 'pending', NULL, NULL, NULL, '2026-07-13 04:36:57', '2026-07-13 04:36:57', NULL, 0),
+(3, 5, 2, '2026-07-20', 'Monday', '09:00:00', '10:00:00', 'dawdawd', '234', '23423', 'efsfdfdsf', 'pending', NULL, NULL, NULL, '2026-07-13 04:36:57', '2026-07-13 04:36:57', NULL, 0),
+(4, 5, 2, '2026-07-27', 'Monday', '09:00:00', '10:00:00', 'dawdawd', '234', '23423', 'efsfdfdsf', 'pending', NULL, NULL, NULL, '2026-07-13 04:36:57', '2026-07-13 04:36:57', NULL, 0),
+(5, 5, 2, '2026-08-03', 'Monday', '09:00:00', '10:00:00', 'dawdawd', '234', '23423', 'efsfdfdsf', 'pending', NULL, NULL, NULL, '2026-07-13 04:36:57', '2026-07-13 04:36:57', NULL, 0),
+(6, 5, 2, '2026-08-10', 'Monday', '09:00:00', '10:00:00', 'dawdawd', '234', '23423', 'efsfdfdsf', 'pending', NULL, NULL, NULL, '2026-07-13 04:36:57', '2026-07-13 04:36:57', NULL, 0),
+(7, 6, 6, '2026-07-14', 'Tuesday', '07:00:00', '08:00:00', 'awdwadadw', '3423', '4234', 'sfsdfs', 'pending', NULL, NULL, NULL, '2026-07-13 04:37:35', '2026-07-13 04:37:35', NULL, 0),
+(8, 6, 6, '2026-07-21', 'Tuesday', '07:00:00', '08:00:00', 'awdwadadw', '3423', '4234', 'sfsdfs', 'pending', NULL, NULL, NULL, '2026-07-13 04:37:35', '2026-07-13 04:37:35', NULL, 0),
+(9, 6, 6, '2026-07-28', 'Tuesday', '07:00:00', '08:00:00', 'awdwadadw', '3423', '4234', 'sfsdfs', 'pending', NULL, NULL, NULL, '2026-07-13 04:37:35', '2026-07-13 04:37:35', NULL, 0),
+(10, 6, 6, '2026-08-04', 'Tuesday', '07:00:00', '08:00:00', 'awdwadadw', '3423', '4234', 'sfsdfs', 'pending', NULL, NULL, NULL, '2026-07-13 04:37:35', '2026-07-13 04:37:35', NULL, 0),
+(11, 6, 6, '2026-08-11', 'Tuesday', '07:00:00', '08:00:00', 'awdwadadw', '3423', '4234', 'sfsdfs', 'pending', NULL, NULL, NULL, '2026-07-13 04:37:35', '2026-07-13 04:37:35', NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -182,15 +168,9 @@ CREATE TABLE `schedule_templates` (
 --
 
 INSERT INTO `schedule_templates` (`id`, `teacher_id`, `day_of_week`, `start_time`, `end_time`, `subject`, `room`, `grade_level`, `section`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Monday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', '2026-07-04 12:26:53', '2026-07-04 12:26:53'),
-(2, 1, 'Monday', '09:00:00', '10:00:00', 'Geometry', 'Room 102', 'Grade 9', 'Section B', '2026-07-04 12:26:53', '2026-07-04 12:26:53'),
-(3, 1, 'Tuesday', '08:00:00', '09:00:00', 'Algebra', 'Room 101', 'Grade 10', 'Section A', '2026-07-04 12:26:53', '2026-07-04 12:26:53'),
-(4, 1, 'Wednesday', '10:00:00', '11:00:00', 'Calculus', 'Room 201', 'Grade 11', 'Section C', '2026-07-04 12:26:53', '2026-07-04 12:26:53'),
-(5, 2, 'Monday', '08:00:00', '09:00:00', 'Physics', 'Lab 1', 'Grade 10', 'Section A', '2026-07-04 12:26:53', '2026-07-04 12:26:53'),
-(6, 2, 'Monday', '09:00:00', '10:00:00', 'Chemistry', 'Lab 2', 'Grade 9', 'Section B', '2026-07-04 12:26:53', '2026-07-04 12:26:53'),
-(7, 2, 'Tuesday', '10:00:00', '11:00:00', 'Biology', 'Lab 3', 'Grade 11', 'Section A', '2026-07-04 12:26:53', '2026-07-04 12:26:53'),
-(8, 2, 'Thursday', '08:00:00', '10:00:00', 'Math', 'room 302', 'bsis', '2101', '2026-07-04 13:00:40', '2026-07-04 13:00:40'),
-(9, 2, 'Tuesday', '07:08:00', '09:10:00', 'wdadrA', 'awdraf', 'dafdes', 'fdsfgdsg', '2026-07-10 10:07:37', '2026-07-10 10:07:37');
+(4, 1, 'Monday', '07:00:00', '08:00:00', 'dawdawd', '4234', '4234', 'dfghdfghd', '2026-07-13 04:26:53', '2026-07-13 04:26:53'),
+(5, 2, 'Monday', '09:00:00', '10:00:00', 'dawdawd', '234', '23423', 'efsfdfdsf', '2026-07-13 04:36:57', '2026-07-13 04:36:57'),
+(6, 6, 'Tuesday', '07:00:00', '08:00:00', 'awdwadadw', '3423', '4234', 'sfsdfs', '2026-07-13 04:37:35', '2026-07-13 04:37:35');
 
 -- --------------------------------------------------------
 
@@ -215,8 +195,9 @@ CREATE TABLE `teachers` (
 --
 
 INSERT INTO `teachers` (`id`, `user_id`, `employee_id`, `department`, `position`, `contact_number`, `address`, `created_at`, `updated_at`) VALUES
-(1, 2, 'TCH001', 'Mathematics', 'Senior Teacher', NULL, NULL, '2026-07-04 12:26:53', '2026-07-04 12:26:53'),
-(2, 3, 'TCH002', 'Science', 'Teacher', NULL, NULL, '2026-07-04 12:26:53', '2026-07-04 12:26:53');
+(1, 12, '6', 'General', NULL, NULL, NULL, '2026-07-13 04:11:55', '2026-07-13 04:11:55'),
+(2, 13, '4', 'General', NULL, NULL, NULL, '2026-07-13 04:13:10', '2026-07-13 04:13:10'),
+(6, 17, 'TCH-1783916363713', 'General', NULL, NULL, NULL, '2026-07-13 04:19:23', '2026-07-13 04:19:23');
 
 -- --------------------------------------------------------
 
@@ -243,7 +224,14 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `username`, `password`, `email`, `full_name`, `role`, `status`, `created_at`, `updated_at`) VALUES
 (1, 'admin', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'admin@school.com', 'System Administrator', 'admin', 'active', '2026-07-04 12:26:53', '2026-07-07 12:08:35'),
 (2, 'john.doe', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'john.doe@school.com', 'John Doe', 'teacher', 'active', '2026-07-04 12:26:53', '2026-07-07 12:08:35'),
-(3, 'jane.smith', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'jane.smith@school.com', 'Jane Smith', 'teacher', 'active', '2026-07-04 12:26:53', '2026-07-07 12:08:35');
+(3, 'jane.smith', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'jane.smith@school.com', 'Jane Smith', 'teacher', 'active', '2026-07-04 12:26:53', '2026-07-07 12:08:35'),
+(4, 'kevindurant', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'kevindurant@school.com', 'Kevin Durant', 'teacher', 'active', '2026-07-13 04:07:53', '2026-07-13 04:07:53'),
+(12, 'kevindurant1783915915061', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'kevindurant1783915915061@school.com', 'Kevin Durant', 'teacher', 'active', '2026-07-13 04:11:55', '2026-07-13 04:11:55'),
+(13, 'stephencurry', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'stephencurry@school.com', 'Stephen Curry', 'teacher', 'active', '2026-07-13 04:13:10', '2026-07-13 04:13:10'),
+(14, 'lebronjames', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'lebronjames@school.com', 'Lebron James', 'teacher', 'active', '2026-07-13 04:17:55', '2026-07-13 04:17:55'),
+(15, 'lebronjames1783916276847', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'lebronjames1783916276847@school.com', 'Lebron James', 'teacher', 'active', '2026-07-13 04:17:56', '2026-07-13 04:17:56'),
+(16, 'lebronjames1783916312262', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'lebronjames1783916312262@school.com', 'Lebron James', 'teacher', 'active', '2026-07-13 04:18:32', '2026-07-13 04:18:32'),
+(17, 'lebronjames1783916363708', '$2b$10$HpSkMednR0vMANWGOtOSUuWs1NM1cX4aaJTKREiTyKWtWThJvjRI2', 'lebronjames1783916363708@school.com', 'Lebron James', 'teacher', 'active', '2026-07-13 04:19:23', '2026-07-13 04:19:23');
 
 -- --------------------------------------------------------
 
@@ -353,7 +341,7 @@ ALTER TABLE `visitor_logs`
 -- AUTO_INCREMENT for table `daily_attendance`
 --
 ALTER TABLE `daily_attendance`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `facility_inventory`
@@ -371,19 +359,19 @@ ALTER TABLE `facility_reports`
 -- AUTO_INCREMENT for table `schedule_templates`
 --
 ALTER TABLE `schedule_templates`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `teachers`
 --
 ALTER TABLE `teachers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `visitor_logs`
@@ -402,13 +390,6 @@ ALTER TABLE `daily_attendance`
   ADD CONSTRAINT `daily_attendance_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `teachers` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `daily_attendance_ibfk_2` FOREIGN KEY (`schedule_template_id`) REFERENCES `schedule_templates` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `daily_attendance_ibfk_3` FOREIGN KEY (`marked_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `facility_reports`
---
-ALTER TABLE `facility_reports`
-  ADD CONSTRAINT `facility_reports_ibfk_1` FOREIGN KEY (`reported_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `facility_reports_ibfk_2` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `schedule_templates`
