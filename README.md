@@ -1,5 +1,5 @@
 cd backend
-npm run dev
+php -S localhost:3000 -t public
 
 
 cd frontend
